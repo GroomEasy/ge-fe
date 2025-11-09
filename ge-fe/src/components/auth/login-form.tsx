@@ -71,7 +71,7 @@ export function LoginForm() {
             placeholder="이메일 입력"
             value={formData.email}
             onChange={handleChange}
-            className="w-full h-14 px-5 border border-gray-200 rounded focus:outline-none focus:border-gray-300 placeholder:text-gray-400 text-[13px] bg-white transition-colors"
+            className="w-full h-12 px-5 border border-gray-200 rounded focus:outline-none focus:border-gray-300 placeholder:text-gray-400 text-[13px] bg-white transition-colors"
             required
           />
 
@@ -82,7 +82,7 @@ export function LoginForm() {
             placeholder="패스워드 입력"
             value={formData.password}
             onChange={handleChange}
-            className="w-full h-14 px-5 border border-gray-200 rounded focus:outline-none focus:border-gray-300 placeholder:text-gray-400 text-[13px] bg-white transition-colors"
+            className="w-full h-12 px-5 border border-gray-200 rounded focus:outline-none focus:border-gray-300 placeholder:text-gray-400 text-[13px] bg-white transition-colors"
             required
           />
 

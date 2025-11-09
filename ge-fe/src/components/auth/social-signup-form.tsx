@@ -77,7 +77,7 @@ export function SocialSignUpForm() {
               placeholder="이름을 입력해주세요."
               value={formData.nickname}
               onChange={handleChange}
-              className="w-full h-14 px-5 border border-gray-200 rounded focus:outline-none focus:border-gray-300 placeholder:text-gray-400 text-sm bg-white"
+              className="w-full h-12 px-5 border border-gray-200 rounded focus:outline-none focus:border-gray-300 placeholder:text-gray-400 text-[12px] bg-white"
             />
           </div>
 
@@ -89,7 +89,7 @@ export function SocialSignUpForm() {
               placeholder="ex) 19980101"
               value={formData.birthDate}
               onChange={handleChange}
-              className="w-full h-14 px-5 border border-gray-200 rounded focus:outline-none focus:border-gray-300 placeholder:text-gray-400 text-sm bg-white"
+              className="w-full h-12 px-5 border border-gray-200 rounded focus:outline-none focus:border-gray-300 placeholder:text-gray-400 text-[12px] bg-white"
             />
           </div>
 
@@ -102,51 +102,49 @@ export function SocialSignUpForm() {
               placeholder="example@gmail.com"
               value={formData.email}
               onChange={handleChange}
-              className="w-full h-14 px-5 border border-gray-200 rounded focus:outline-none focus:border-gray-300 placeholder:text-gray-400 text-sm bg-white"
+              className="w-full h-12 px-5 border border-gray-200 rounded focus:outline-none focus:border-gray-300 placeholder:text-gray-400 text-[12px] bg-white"
             />
           </div>
 
-          {/* 약관 동의 */}
-          <div className="pt-8">
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={agreed}
-                onChange={(e) => setAgreed(e.target.checked)}
-                className="w-5 h-5 rounded border-gray-300"
-              />
-              <span className="text-sm text-gray-600">
-                <button
-                  type="button"
-                  onClick={() => navigate('/auth/terms-of-service')}
-                  className="font-bold underline hover:text-gray-800"
-                >
-                  이용약관
-                </button>
-                {' '}및{' '}
-                <button
-                  type="button"
-                  onClick={() => navigate('/auth/privacy-policy')}
-                  className="font-bold underline hover:text-gray-800"
-                >
-                  개인정보 취급방침
-                </button>
-                에 동의합니다. (필수)
-              </span>
-            </label>
-          </div>
         </form>
       </div>
 
+      {/* 약관 동의 - 하단 고정 */}
+      <div className="px-6 py-6">
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={agreed}
+            onChange={(e) => setAgreed(e.target.checked)}
+            className="w-5 h-5 rounded border-gray-300"
+          />
+          <span className="text-[12px] text-gray-600">
+            <button
+              type="button"
+              onClick={() => navigate('/auth/terms-of-service')}
+              className="underline text-black hover:font-bold"
+            >
+              이용약관
+            </button>
+            {' '}및{' '}
+            <button
+              type="button"
+              onClick={() => navigate('/auth/privacy-policy')}
+              className="underline text-black hover:font-bold"
+            >
+              개인정보 취급방침
+            </button>
+            에 동의합니다. (필수)
+          </span>
+        </label>
+      </div>
+
       {/* Submit Button - 하단 고정 */}
-      <div className="mt-auto">
+      <div>
         <button
           type="submit"
           onClick={handleSubmit}
-          disabled={!isFormValid}
-          className={`w-full h-14 font-medium transition-colors ${
-            isFormValid ? 'bg-black text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-          }`}
+          className="w-full h-14 font-medium transition-colors bg-black text-white"
         >
           다음
         </button>
