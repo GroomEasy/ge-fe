@@ -2,7 +2,11 @@ name: Deploy
 
 on:
   push:
+<<<<<<< HEAD
     branches: ['main']
+=======
+    branches: ['develop']
+>>>>>>> dragon
 
 jobs:
   build:
