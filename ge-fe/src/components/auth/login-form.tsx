@@ -7,6 +7,7 @@ import separateIcon from '../../images/login/seperate.svg';
 import { authService } from '../../services/auth.service';
 import { getErrorMessage } from '../../lib/api/error-handler';
 import { redirectToKakaoLogin, getKakaoCodeFromUrl, getKakaoErrorFromUrl } from '../../lib/utils/kakao';
+import { loginSchema } from '../../lib/schemas/auth.schema';
 
 type UserType = 'login' | 'expert';
 
@@ -79,10 +80,14 @@ export function LoginForm() {
     setIsLoading(true);
 
     try {
-      const response = await authService.login({
+      // 1차 검증: Zod 스키마로 클라이언트 측 검증
+      const validatedData = loginSchema.parse({
         email: formData.email,
         password: formData.password,
       });
+
+      // 검증 통과 후 API 호출
+      const response = await authService.login(validatedData);
 
       // 로그인 성공
       if (response.statusCode === 0) {
@@ -91,9 +96,15 @@ export function LoginForm() {
         navigate('/');
       }
     } catch (err) {
-      // 중앙화된 에러 처리 사용
-      const errorMessage = getErrorMessage(err);
-      setError(errorMessage);
+      // Zod 검증 에러 처리
+      if (err && typeof err === 'object' && 'issues' in err) {
+        const zodError = err as { issues: Array<{ message: string }> };
+        setError(zodError.issues[0].message);
+      } else {
+        // API 에러 처리: 백엔드에서 전송한 에러 메시지
+        const errorMessage = getErrorMessage(err);
+        setError(errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -141,12 +152,11 @@ export function LoginForm() {
           {/* Email Input */}
           <input
             name="email"
-            type="email"
+            type="text"
             placeholder="이메일 입력"
             value={formData.email}
             onChange={handleChange}
             className="w-full h-12 px-5 border border-gray-200 rounded focus:outline-none focus:border-gray-300 placeholder:text-gray-400 text-[13px] bg-white transition-colors"
-            required
             disabled={isLoading}
           />
 
@@ -158,7 +168,6 @@ export function LoginForm() {
             value={formData.password}
             onChange={handleChange}
             className="w-full h-12 px-5 border border-gray-200 rounded focus:outline-none focus:border-gray-300 placeholder:text-gray-400 text-[13px] bg-white transition-colors"
-            required
             disabled={isLoading}
           />
 

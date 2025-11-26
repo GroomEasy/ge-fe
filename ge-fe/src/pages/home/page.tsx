@@ -17,10 +17,10 @@ const HomePage = () => {
 
   // 카테고리 데이터
   const categories = [
-    { id: 'hair', name: 'Hair', icon: '💇' },
-    { id: 'fashion', name: 'Fashion', icon: '👔' },
-    { id: 'makeup', name: 'Makeup', icon: '💄' },
-    { id: 'skin', name: 'Skin', icon: '✨' },
+    { id: 'hair', name: 'Hair', icon: '' },
+    { id: 'fashion', name: 'Fashion', icon: '' },
+    { id: 'makeup', name: 'Makeup', icon: '' },
+    { id: 'skin', name: 'Skin', icon: '' },
   ];
 
   // 후기 탭
@@ -54,11 +54,11 @@ const HomePage = () => {
         <section className="px-4 py-4">
           <div className="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory">
             {/* 배너 1 */}
-            <div className="min-w-[52px] h-[140px] bg-gray-200 rounded-lg shrink-0 snap-start" />
-            {/* 배너 2 (중앙 큰 배너) */}
-            <div className="min-w-[260px] h-[140px] bg-gray-300 rounded-lg shrink-0 snap-center" />
+            <div className="w-60 h-60 bg-gray-200 rounded-lg shrink-0 snap-start" />
+            {/* 배너 2 */}
+            <div className="w-60 h-60 bg-gray-300 rounded-lg shrink-0 snap-center" />
             {/* 배너 3 */}
-            <div className="min-w-[52px] h-[140px] bg-gray-200 rounded-lg shrink-0 snap-start" />
+            <div className="w-60 h-60 bg-gray-200 rounded-lg shrink-0 snap-start" />
           </div>
         </section>
 
