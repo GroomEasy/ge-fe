@@ -100,9 +100,9 @@ export function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="h-screen bg-white flex flex-col overflow-hidden">
       {/* Header */}
-      <header className="flex items-center px-6 py-4">
+      <header className="shrink-0 flex items-center px-6 py-4">
         <button onClick={() => navigate(-1)} className="mr-3">
           <img src={backIcon} alt="back" className="w-2.5 h-[18px]" />
         </button>
@@ -110,7 +110,7 @@ export function LoginForm() {
       </header>
 
       {/* Tabs */}
-      <div className="flex">
+      <div className="shrink-0 flex">
         <button
           onClick={() => setUserType('login')}
           className={`flex-1 py-4 text-base font-medium transition-all relative ${
@@ -136,8 +136,8 @@ export function LoginForm() {
       </div>
 
       {/* Form */}
-      <div className="flex-1 overflow-y-auto">
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4 px-6 pt-10">
+      <div className="flex-1 overflow-y-auto scrollbar-hide">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 px-6 pt-10 pb-8">
           {/* Email Input */}
           <input
             name="email"

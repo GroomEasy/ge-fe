@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, Heart } from 'lucide-react';
 
 // 임시 데이터 타입 (추후 백엔드 API 타입으로 교체)
@@ -11,6 +12,7 @@ interface Expert {
 }
 
 const HomePage = () => {
+  const navigate = useNavigate();
   const [selectedReviewTab, setSelectedReviewTab] = useState('헤어');
 
   // 카테고리 데이터
@@ -32,9 +34,9 @@ const HomePage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="h-screen flex flex-col bg-white overflow-hidden">
       {/* 헤더 */}
-      <header className="sticky top-0 bg-white z-10 px-4 py-3 flex items-center justify-between">
+      <header className="flex-shrink-0 bg-white z-10 px-4 py-3 flex items-center justify-between border-b border-gray-100">
         <h1 className="text-xl font-bold">Menual</h1>
         <div className="flex items-center gap-2">
           <button className="p-1.5 hover:bg-gray-50 rounded-full transition-colors">
@@ -47,7 +49,7 @@ const HomePage = () => {
       </header>
 
       {/* 메인 컨텐츠 */}
-      <main className="pb-20">
+      <main className="flex-1 overflow-y-auto scrollbar-hide">
         {/* 가로 스크롤 배너 영역 */}
         <section className="px-4 py-4">
           <div className="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory">
@@ -177,22 +179,26 @@ const HomePage = () => {
       </main>
 
       {/* 하단 네비게이션 바 */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2 flex justify-around items-center">
-        <button className="flex flex-col items-center gap-0.5 text-black">
-          <span className="text-xl">🏠</span>
+      <nav className="flex-shrink-0 bg-white border-t border-gray-200 px-4 py-2 flex justify-around items-center">
+        <button onClick={() => navigate('/')} className="flex flex-col items-center gap-0.5 text-gray-600">
+          <div className="w-12 h-12 bg-gray-200 rounded-full" />
           <span className="text-[10px]">홈</span>
         </button>
         <button className="flex flex-col items-center gap-0.5 text-gray-400">
-          <span className="text-xl">💬</span>
+          <div className="w-12 h-12 bg-gray-200 rounded-full" />
+          <span className="text-[10px]">탐색</span>
+        </button>
+        <button onClick={() => navigate('/chat')} className="flex flex-col items-center gap-0.5 text-gray-400">
+          <div className="w-12 h-12 bg-gray-200 rounded-full" />
           <span className="text-[10px]">채팅</span>
         </button>
         <button className="flex flex-col items-center gap-0.5 text-gray-400">
-          <span className="text-xl">📝</span>
-          <span className="text-[10px]">작성</span>
+          <div className="w-12 h-12 bg-gray-200 rounded-full" />
+          <span className="text-[10px]">커뮤니티</span>
         </button>
-        <button className="flex flex-col items-center gap-0.5 text-gray-400">
-          <span className="text-xl">👤</span>
-          <span className="text-[10px]">마이</span>
+        <button onClick={() => navigate('/profile')} className="flex flex-col items-center gap-0.5 text-gray-400">
+          <div className="w-12 h-12 bg-gray-200 rounded-full" />
+          <span className="text-[10px]">마이페이지</span>
         </button>
       </nav>
     </div>

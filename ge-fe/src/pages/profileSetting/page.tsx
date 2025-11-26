@@ -31,9 +31,9 @@ export default function FaceStep() {
   const canContinue = selected.size > 0 || etc.trim().length > 0;
 
   return (
-    <div className="mx-auto min-h-dvh bg-white text-gray-900">
+    <div className="h-screen flex flex-col bg-white text-gray-900 overflow-hidden">
       {/* Top bar */}
-      <header className="sticky top-0 z-10 flex h-12 items-center justify-between bg-white/90 px-3 backdrop-blur">
+      <header className="shrink-0 flex h-12 items-center justify-between bg-white px-3">
         <button
           className="flex items-center gap-1 text-gray-900"
           onClick={() => history.back()}
@@ -44,7 +44,7 @@ export default function FaceStep() {
         <span className="text-sm text-gray-500">건너뛰기</span>
       </header>
 
-      <main className="px-4 pb-[88px] pt-1">
+      <main className="flex-1 px-4 pt-1 overflow-y-auto scrollbar-hide">
         <p className="mb-2 text-sm font-medium text-[#429FF04D]">1/7</p>
         <h1 className="mb-6 text-[22px] font-bold leading-snug">
           얼굴에서 자신 있는 부분을 골라주세요.
@@ -108,7 +108,7 @@ export default function FaceStep() {
       </main>
 
       {/* Bottom action */}
-      <div className="fixed inset-x-0 bottom-0 z-20 mx-auto bg-white/80 pb-[env(safe-area-inset-bottom)] pt-2 backdrop-blur">
+      <div className="shrink-0 bg-white pt-2 pb-2">
         <Button
           size="lg"
           disabled={!canContinue}
