@@ -18,7 +18,7 @@ export function LoginForm() {
     email: '',
     password: '',
   });
-  const [error, setError] = useState<string>('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
 
   // 카카오 로그인 콜백 처리
@@ -56,7 +56,7 @@ export function LoginForm() {
         }
       } catch (err) {
         const errorMessage = getErrorMessage(err);
-        setError(errorMessage);
+        setErrors({ general: errorMessage });
       } finally {
         setIsLoading(false);
         // URL에서 code 파라미터 제거
@@ -70,13 +70,27 @@ export function LoginForm() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    // 입력 시 에러 메시지 초기화
-    if (error) setError('');
+    // 입력 시 해당 필드의 에러 메시지 초기화
+    if (errors[name]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+    // 일반 에러도 초기화
+    if (errors.general) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.general;
+        return newErrors;
+      });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setErrors({});
     setIsLoading(true);
 
     try {
@@ -98,12 +112,21 @@ export function LoginForm() {
     } catch (err) {
       // Zod 검증 에러 처리
       if (err && typeof err === 'object' && 'issues' in err) {
-        const zodError = err as { issues: Array<{ message: string }> };
-        setError(zodError.issues[0].message);
+        const zodError = err as { issues: Array<{ path: string[]; message: string }> };
+        const fieldErrors: Record<string, string> = {};
+
+        zodError.issues.forEach((issue) => {
+          const fieldName = issue.path[0] as string;
+          if (!fieldErrors[fieldName]) {
+            fieldErrors[fieldName] = issue.message;
+          }
+        });
+
+        setErrors(fieldErrors);
       } else {
-        // API 에러 처리: 백엔드에서 전송한 에러 메시지
+        // API 에러 처리: 백엔드에서 전송한 에러 메시지 (보안상 통합 메시지)
         const errorMessage = getErrorMessage(err);
-        setError(errorMessage);
+        setErrors({ general: errorMessage });
       }
     } finally {
       setIsLoading(false);
@@ -150,31 +173,45 @@ export function LoginForm() {
       <div className="flex-1 overflow-y-auto scrollbar-hide">
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 px-6 pt-10 pb-8">
           {/* Email Input */}
-          <input
-            name="email"
-            type="text"
-            placeholder="이메일 입력"
-            value={formData.email}
-            onChange={handleChange}
-            className="w-full h-12 px-5 border border-gray-200 rounded focus:outline-none focus:border-gray-300 placeholder:text-gray-400 text-[13px] bg-white transition-colors"
-            disabled={isLoading}
-          />
+          <div>
+            <input
+              name="email"
+              type="text"
+              placeholder="이메일 입력"
+              value={formData.email}
+              onChange={handleChange}
+              className={`w-full h-12 px-5 border rounded focus:outline-none placeholder:text-gray-400 text-[13px] bg-white transition-colors ${
+                errors.email ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-gray-300'
+              }`}
+              disabled={isLoading}
+            />
+            {errors.email && (
+              <p className="text-red-500 text-xs mt-1 px-1">{errors.email}</p>
+            )}
+          </div>
 
           {/* Password Input */}
-          <input
-            name="password"
-            type="password"
-            placeholder="패스워드 입력"
-            value={formData.password}
-            onChange={handleChange}
-            className="w-full h-12 px-5 border border-gray-200 rounded focus:outline-none focus:border-gray-300 placeholder:text-gray-400 text-[13px] bg-white transition-colors"
-            disabled={isLoading}
-          />
+          <div>
+            <input
+              name="password"
+              type="password"
+              placeholder="패스워드 입력"
+              value={formData.password}
+              onChange={handleChange}
+              className={`w-full h-12 px-5 border rounded focus:outline-none placeholder:text-gray-400 text-[13px] bg-white transition-colors ${
+                errors.password ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-gray-300'
+              }`}
+              disabled={isLoading}
+            />
+            {errors.password && (
+              <p className="text-red-500 text-xs mt-1 px-1">{errors.password}</p>
+            )}
+          </div>
 
-          {/* Error Message */}
-          {error && (
+          {/* 일반 에러 메시지 (로그인 실패 등) */}
+          {errors.general && (
             <div className="text-red-500 text-sm px-1">
-              {error}
+              {errors.general}
             </div>
           )}
 

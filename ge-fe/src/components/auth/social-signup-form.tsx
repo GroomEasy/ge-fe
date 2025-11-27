@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import backIcon from '../../images/login/back.svg';
 import { authService } from '../../services/auth.service';
-import type { ApiErrorResponse } from '../../lib/api/types';
-import { AxiosError } from 'axios';
+import { getErrorMessage } from '../../lib/api/error-handler';
+import { socialSignupSchema } from '../../lib/schemas/auth.schema';
 
 type UserType = 'customer' | 'expert';
 
@@ -16,14 +16,20 @@ export function SocialSignUpForm() {
     email: '',
   });
   const [agreed, setAgreed] = useState(false);
-  const [error, setError] = useState<string>('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    // 입력 시 에러 메시지 초기화
-    if (error) setError('');
+    // 입력 시 해당 필드의 에러 메시지 초기화
+    if (errors[name]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
   };
 
   const formatBirthDate = (date: string): string => {
@@ -36,17 +42,12 @@ export function SocialSignUpForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-
-    if (!agreed) {
-      setError('필수 약관 및 개인정보 처리에 동의해야 합니다.');
-      return;
-    }
-
+    setErrors({});
     setIsLoading(true);
 
     try {
-      const response = await authService.socialSignup({
+      // 1차 검증: Zod 스키마로 클라이언트 측 검증
+      const validatedData = socialSignupSchema.parse({
         nickname: formData.nickname,
         birth: formatBirthDate(formData.birthDate),
         email: formData.email,
@@ -55,6 +56,9 @@ export function SocialSignUpForm() {
         agreePrivacy: agreed,
       });
 
+      // 검증 통과 후 API 호출
+      const response = await authService.socialSignup(validatedData);
+
       // 소셜 회원가입 성공
       if (response.statusCode === 0) {
         console.log('소셜 회원가입 성공:', response.data);
@@ -62,13 +66,23 @@ export function SocialSignUpForm() {
         navigate('/auth/interest-selection');
       }
     } catch (err) {
-      // 에러 처리
-      const axiosError = err as AxiosError<ApiErrorResponse>;
-      if (axiosError.response) {
-        const { message } = axiosError.response.data;
-        setError(message || '회원가입에 실패했습니다. 다시 시도해주세요.');
+      // Zod 검증 에러 처리
+      if (err && typeof err === 'object' && 'issues' in err) {
+        const zodError = err as { issues: Array<{ path: string[]; message: string }> };
+        const fieldErrors: Record<string, string> = {};
+
+        zodError.issues.forEach((issue) => {
+          const fieldName = issue.path[0] as string;
+          if (!fieldErrors[fieldName]) {
+            fieldErrors[fieldName] = issue.message;
+          }
+        });
+
+        setErrors(fieldErrors);
       } else {
-        setError('네트워크 오류가 발생했습니다. 다시 시도해주세요.');
+        // API 에러 처리: 백엔드에서 전송한 에러 메시지
+        const errorMessage = getErrorMessage(err);
+        setErrors({ general: errorMessage });
       }
     } finally {
       setIsLoading(false);
@@ -128,8 +142,14 @@ export function SocialSignUpForm() {
               placeholder="이름을 입력해주세요."
               value={formData.nickname}
               onChange={handleChange}
-              className="w-full h-12 px-5 border border-gray-200 rounded focus:outline-none focus:border-gray-300 placeholder:text-gray-400 text-[12px] bg-white"
+              className={`w-full h-12 px-5 border rounded focus:outline-none placeholder:text-gray-400 text-[12px] bg-white transition-colors ${
+                errors.nickname ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-gray-300'
+              }`}
+              disabled={isLoading}
             />
+            {errors.nickname && (
+              <p className="text-red-500 text-xs mt-1 px-1">{errors.nickname}</p>
+            )}
           </div>
 
           {/* 생년월일 */}
@@ -140,8 +160,14 @@ export function SocialSignUpForm() {
               placeholder="ex) 19980101"
               value={formData.birthDate}
               onChange={handleChange}
-              className="w-full h-12 px-5 border border-gray-200 rounded focus:outline-none focus:border-gray-300 placeholder:text-gray-400 text-[12px] bg-white"
+              className={`w-full h-12 px-5 border rounded focus:outline-none placeholder:text-gray-400 text-[12px] bg-white transition-colors ${
+                errors.birth ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-gray-300'
+              }`}
+              disabled={isLoading}
             />
+            {errors.birth && (
+              <p className="text-red-500 text-xs mt-1 px-1">{errors.birth}</p>
+            )}
           </div>
 
           {/* 이메일 */}
@@ -149,19 +175,31 @@ export function SocialSignUpForm() {
             <label className="block text-base font-medium text-black mb-3">이메일</label>
             <input
               name="email"
-              type="email"
+              type="text"
               placeholder="example@gmail.com"
               value={formData.email}
               onChange={handleChange}
-              className="w-full h-12 px-5 border border-gray-200 rounded focus:outline-none focus:border-gray-300 placeholder:text-gray-400 text-[12px] bg-white"
+              className={`w-full h-12 px-5 border rounded focus:outline-none placeholder:text-gray-400 text-[12px] bg-white transition-colors ${
+                errors.email ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-gray-300'
+              }`}
               disabled={isLoading}
             />
+            {errors.email && (
+              <p className="text-red-500 text-xs mt-1 px-1">{errors.email}</p>
+            )}
           </div>
 
-          {/* Error Message */}
-          {error && (
+          {/* 약관 동의 에러 */}
+          {(errors.agreeTerms || errors.agreePrivacy) && (
+            <div className="text-red-500 text-xs px-1">
+              {errors.agreeTerms || errors.agreePrivacy}
+            </div>
+          )}
+
+          {/* 일반 에러 메시지 */}
+          {errors.general && (
             <div className="text-red-500 text-sm px-1">
-              {error}
+              {errors.general}
             </div>
           )}
         </form>
