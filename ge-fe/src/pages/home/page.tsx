@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Heart } from 'lucide-react';
+import { useAuthStore } from '../../stores/useAuthStore';
 
 // 임시 데이터 타입 (추후 백엔드 API 타입으로 교체)
 interface Expert {
@@ -13,8 +14,14 @@ interface Expert {
 
 const HomePage = () => {
   const navigate = useNavigate();
+  const { isAuthenticated, initializeAuth } = useAuthStore();
   const [selectedReviewTab, setSelectedReviewTab] = useState('헤어');
 
+  // 페이지 로드 시 Auth 초기화 (localStorage에서 복원)
+  useEffect(() => {
+    initializeAuth();
+  }, [initializeAuth]);
+  
   // 카테고리 데이터
   const categories = [
     { id: 'hair', name: 'Hair', icon: '' },
@@ -32,6 +39,15 @@ const HomePage = () => {
     { id: 2, name: '전문가 이름', category: '메이크업', rating: 4.7 },
     { id: 3, name: '전문가 이름', category: '메이크업', rating: 4.7 },
   ];
+
+  // 마이페이지 클릭 핸들러
+  const handleMyPageClick = () => {
+    if (isAuthenticated) {
+      navigate('/profile');
+    } else {
+      navigate('/auth/login');
+    }
+  };
 
   return (
     <div className="h-screen flex flex-col bg-white overflow-hidden">
@@ -56,24 +72,24 @@ const HomePage = () => {
             {/* 배너 1 */}
             <div className="w-60 h-60 bg-gray-200 rounded-lg shrink-0 snap-start" />
             {/* 배너 2 */}
-            <div className="w-60 h-60 bg-gray-300 rounded-lg shrink-0 snap-center" />
+            <div className="w-60 h-60 bg-gray-200 rounded-lg shrink-0 snap-center" />
             {/* 배너 3 */}
             <div className="w-60 h-60 bg-gray-200 rounded-lg shrink-0 snap-start" />
           </div>
         </section>
 
         {/* 카테고리 섹션 */}
-        <section className="px-4 py-2">
-          <div className="flex justify-between items-center gap-2">
+        <section className="px-4 py-4">
+          <div className="flex justify-between items-center gap-3">
             {categories.map((category) => (
               <button
                 key={category.id}
-                className="flex flex-col items-center gap-1.5 flex-1"
+                className="flex flex-col items-center gap-2 flex-1"
               >
-                <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center text-xl hover:bg-gray-200 transition-colors">
+                <div className="w-[50px] h-[50px] bg-gray-200 rounded-full flex items-center justify-center text-xl hover:bg-gray-300 transition-colors">
                   {category.icon}
                 </div>
-                <span className="text-xs text-gray-500">{category.name}</span>
+                <span className="text-[11px] text-gray-600">{category.name}</span>
               </button>
             ))}
           </div>
@@ -81,37 +97,37 @@ const HomePage = () => {
 
         {/* 전문가 TOP3 섹션 */}
         <section className="px-4 py-6">
-          <h2 className="text-base font-bold mb-3">지금 가장 인기있는 전문가 TOP3</h2>
+          <h2 className="text-base font-bold mb-4">지금 가장 인기있는 전문가 TOP3</h2>
           <div className="space-y-3">
             {topExperts.map((expert, index) => (
               <div
                 key={expert.id}
-                className="flex items-start gap-3 p-3 bg-white border border-gray-200 rounded-lg"
+                className="flex items-center gap-3 p-3 bg-white rounded-xl"
               >
                 {/* 순위 */}
-                <div className="text-lg font-bold text-gray-400 min-w-[20px] pt-0.5">
+                <div className="text-base font-bold text-gray-400 min-w-4">
                   {index + 1}
                 </div>
 
                 {/* 전문가 이미지 */}
-                <div className="w-12 h-12 bg-gray-200 rounded-full shrink-0" />
+                <div className="w-[60px] h-[60px] bg-gray-200 rounded-full shrink-0" />
 
                 {/* 전문가 정보 */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5 mb-0.5">
+                  <div className="flex items-center gap-1.5 mb-1">
                     <h3 className="text-sm font-semibold">{expert.name}</h3>
-                    <span className="text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
+                    <span className="text-[10px] text-[#008BFF] bg-[#E5F4FF] px-2 py-1 rounded-[2px]">
                       {expert.category}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500 line-clamp-2">
-                    컨비닝보낼 위한 솔루션지가 도 직절이구. 24시간 내에 전문가의 솔루션을...
+                  <p className="text-[13px] text-gray-500 line-clamp-2 leading-relaxed">
+                    김바보님을 위한 솔루션지가 도착했어요. 24시간 내에 전문가님께 질문이 가능하며 시간이 지나면 질문이 불가능해요.
                   </p>
                 </div>
 
                 {/* 좋아요 버튼 */}
                 <button className="p-1 hover:bg-gray-50 rounded-full transition-colors shrink-0">
-                  <Heart className="w-4 h-4" />
+                  <Heart className="w-5 h-5 text-gray-400" />
                 </button>
               </div>
             ))}
@@ -179,24 +195,24 @@ const HomePage = () => {
       </main>
 
       {/* 하단 네비게이션 바 */}
-      <nav className="flex-shrink-0 bg-white border-t border-gray-200 px-4 py-2 flex justify-around items-center">
-        <button onClick={() => navigate('/')} className="flex flex-col items-center gap-0.5 text-gray-600">
+      <nav className="flex-shrink-0 bg-white border-t border-gray-200 px-4 py-3 flex justify-around items-center">
+        <button onClick={() => navigate('/')} className="flex flex-col items-center gap-1 text-gray-600">
           <div className="w-12 h-12 bg-gray-200 rounded-full" />
           <span className="text-[10px]">홈</span>
         </button>
-        <button className="flex flex-col items-center gap-0.5 text-gray-400">
+        <button className="flex flex-col items-center gap-1 text-gray-400">
           <div className="w-12 h-12 bg-gray-200 rounded-full" />
           <span className="text-[10px]">탐색</span>
         </button>
-        <button onClick={() => navigate('/chat')} className="flex flex-col items-center gap-0.5 text-gray-400">
+        <button onClick={() => navigate('/chat')} className="flex flex-col items-center gap-1 text-gray-400">
           <div className="w-12 h-12 bg-gray-200 rounded-full" />
           <span className="text-[10px]">채팅</span>
         </button>
-        <button className="flex flex-col items-center gap-0.5 text-gray-400">
+        <button className="flex flex-col items-center gap-1 text-gray-400">
           <div className="w-12 h-12 bg-gray-200 rounded-full" />
           <span className="text-[10px]">커뮤니티</span>
         </button>
-        <button onClick={() => navigate('/profile')} className="flex flex-col items-center gap-0.5 text-gray-400">
+        <button onClick={handleMyPageClick} className="flex flex-col items-center gap-1 text-gray-400">
           <div className="w-12 h-12 bg-gray-200 rounded-full" />
           <span className="text-[10px]">마이페이지</span>
         </button>

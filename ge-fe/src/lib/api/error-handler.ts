@@ -71,6 +71,16 @@ export function getErrorMessage(error: unknown): string {
     if (axiosError.response?.status === 500) {
       return '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
     }
+
+    // 502 Bad Gateway
+    if (axiosError.response?.status === 502) {
+      return '서버와 통신 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.';
+    }
+
+    // 503 Service Unavailable
+    if (axiosError.response?.status === 503) {
+      return '서비스를 일시적으로 사용할 수 없습니다. 잠시 후 다시 시도해주세요.';
+    }
   }
 
   // 기본 에러 메시지

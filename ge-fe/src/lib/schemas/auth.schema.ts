@@ -34,7 +34,17 @@ export const signupSchema = z
     birth: z
       .string()
       .min(1, '생년월일을 입력해주세요.')
-      .regex(/^\d{4}-\d{2}-\d{2}$/, '생년월일은 YYYY-MM-DD 형식이어야 합니다.'),
+      .regex(/^\d{8}$/, '생년월일은 8자리 숫자로 입력해주세요. (예: 19980101)')
+      .refine((val) => {
+        const year = parseInt(val.substring(0, 4));
+        const month = parseInt(val.substring(4, 6));
+        const day = parseInt(val.substring(6, 8));
+        return year >= 1900 && year <= new Date().getFullYear() &&
+               month >= 1 && month <= 12 &&
+               day >= 1 && day <= 31;
+      }, {
+        message: '올바른 날짜를 입력해주세요.',
+      }),
     email: emailSchema,
     password: passwordSchema,
     passwordConfirm: z.string().min(1, '비밀번호 확인을 입력해주세요.'),
@@ -70,7 +80,17 @@ export const socialSignupSchema = z.object({
   birth: z
     .string()
     .min(1, '생년월일을 입력해주세요.')
-    .regex(/^\d{4}-\d{2}-\d{2}$/, '생년월일은 YYYY-MM-DD 형식이어야 합니다.'),
+    .regex(/^\d{8}$/, '생년월일은 8자리 숫자로 입력해주세요. (예: 19980101)')
+    .refine((val) => {
+      const year = parseInt(val.substring(0, 4));
+      const month = parseInt(val.substring(4, 6));
+      const day = parseInt(val.substring(6, 8));
+      return year >= 1900 && year <= new Date().getFullYear() &&
+             month >= 1 && month <= 12 &&
+             day >= 1 && day <= 31;
+    }, {
+      message: '올바른 날짜를 입력해주세요.',
+    }),
   email: emailSchema,
   userType: z.string().min(1, '사용자 유형을 선택해주세요.'),
   agreeTerms: z.boolean().refine((val) => val === true, {

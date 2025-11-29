@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import backIcon from '../../images/login/back.svg';
 import googleIcon from '../../images/login/google.svg';
@@ -6,13 +6,15 @@ import kakaoIcon from '../../images/login/kakao.svg';
 import separateIcon from '../../images/login/seperate.svg';
 import { authService } from '../../services/auth.service';
 import { getErrorMessage } from '../../lib/api/error-handler';
-import { redirectToKakaoLogin, getKakaoCodeFromUrl, getKakaoErrorFromUrl } from '../../lib/utils/kakao';
+import { redirectToKakaoLogin } from '../../lib/utils/kakao';
 import { loginSchema } from '../../lib/schemas/auth.schema';
+import { useAuthStore } from '../../stores/useAuthStore';
 
 type UserType = 'login' | 'expert';
 
 export function LoginForm() {
   const navigate = useNavigate();
+  const login = useAuthStore((state) => state.login);
   const [userType, setUserType] = useState<UserType>('login');
   const [formData, setFormData] = useState({
     email: '',
@@ -20,52 +22,6 @@ export function LoginForm() {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
-
-  // 카카오 로그인 콜백 처리
-  useEffect(() => {
-    const handleKakaoCallback = async () => {
-      // URL에서 에러 확인
-      const kakaoError = getKakaoErrorFromUrl();
-      if (kakaoError) {
-        setError(`카카오 로그인 실패: ${kakaoError.error_description}`);
-        return;
-      }
-
-      // URL에서 인가 코드 추출
-      const code = getKakaoCodeFromUrl();
-      if (!code) return;
-
-      setIsLoading(true);
-      try {
-        // 백엔드에 인가 코드 전송
-        const response = await authService.socialLogin({
-          code,
-          provider: 'KAKAO',
-        });
-
-        if (response.statusCode === 0) {
-          const { userType, nickname } = response.data;
-
-          // TMP_USER인 경우 추가 정보 입력 페이지로 이동
-          if (userType === 'TMP_USER') {
-            navigate('/auth/social-signup', { state: { nickname } });
-          } else {
-            // 정상 사용자는 홈으로 이동
-            navigate('/');
-          }
-        }
-      } catch (err) {
-        const errorMessage = getErrorMessage(err);
-        setErrors({ general: errorMessage });
-      } finally {
-        setIsLoading(false);
-        // URL에서 code 파라미터 제거
-        window.history.replaceState({}, '', '/auth/login');
-      }
-    };
-
-    handleKakaoCallback();
-  }, [navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -105,7 +61,11 @@ export function LoginForm() {
 
       // 로그인 성공
       if (response.statusCode === 0) {
-        console.log('로그인 성공:', response.data);
+        const { nickname, userType } = response.data;
+
+        // 로그인 정보 저장
+        login({ nickname, userType });
+
         // 홈 페이지로 이동
         navigate('/');
       }

@@ -4,11 +4,13 @@ import backIcon from '../../images/login/back.svg';
 import { authService } from '../../services/auth.service';
 import { getErrorMessage } from '../../lib/api/error-handler';
 import { signupSchema } from '../../lib/schemas/auth.schema';
+import { useAuthStore } from '../../stores/useAuthStore';
 
 type UserType = 'customer' | 'expert';
 
 export function SignUpForm() {
   const navigate = useNavigate();
+  const login = useAuthStore((state) => state.login);
   const [userType, setUserType] = useState<UserType>('customer');
   const [formData, setFormData] = useState({
     nickname: '',
@@ -34,14 +36,6 @@ export function SignUpForm() {
     }
   };
 
-  const formatBirthDate = (date: string): string => {
-    // YYYYMMDD -> YYYY-MM-DD 변환
-    if (date.length === 8) {
-      return `${date.slice(0, 4)}-${date.slice(4, 6)}-${date.slice(6, 8)}`;
-    }
-    return date;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
@@ -51,11 +45,11 @@ export function SignUpForm() {
       // 1차 검증: Zod 스키마로 클라이언트 측 검증
       const validatedData = signupSchema.parse({
         nickname: formData.nickname,
-        birth: formatBirthDate(formData.birthDate),
+        birth: formData.birthDate, // YYYYMMDD 형식 그대로 전송
         email: formData.email,
         password: formData.password,
         passwordConfirm: formData.passwordConfirm,
-        userType: userType === 'customer' ? 'GROOMER' : 'EXPERT',
+        userType: userType === 'customer' ? 'MENUAL' : 'EXPERT',
         agreeTerms: agreed,
         agreePrivacy: agreed,
       });
@@ -65,7 +59,14 @@ export function SignUpForm() {
 
       // 회원가입 성공
       if (response.statusCode === 0) {
-        console.log('회원가입 성공:', response.data);
+        const { nickname, userType: responseUserType } = response.data;
+
+        // 로그인 정보 저장
+        login({
+          nickname,
+          userType: responseUserType as 'MENUAL' | 'EXPERT',
+        });
+
         // 관심 분야 선택 페이지로 이동
         navigate('/auth/interest-selection');
       }
