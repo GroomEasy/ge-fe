@@ -60,18 +60,18 @@ const HomePage = () => {
   const banners: Banner[] = [
     {
       id: 1,
-      title: '박철웅이 알려주는',
+      title: '박철옹이 알려주는',
       subtitle: '진짜 남자의 메이크업',
     },
     {
       id: 2,
-      title: '전문가의 진짜 케어',
-      subtitle: '트러블 피부 맞춤 상담',
+      title: '박철옹이 알려주는',
+      subtitle: '진짜 남자의 메이크업',
     },
     {
       id: 3,
-      title: '스타일링이 달라지는',
-      subtitle: '퍼스널 컷 가이드',
+      title: '박철옹이 알려주는',
+      subtitle: '진짜 남자의 메이크업',
     },
   ];
 
@@ -82,7 +82,13 @@ const HomePage = () => {
     { id: 'skin', label: 'Skin', route: '/category/skin', icon: skinIcon },
   ];
 
-  const topTabs = ['전체', '헤어', '시스루 컷', '다운펌', '스핀'];
+  const topTabs = [
+    { label: '전체', minWidth: 47 },
+    { label: '헤어', minWidth: 47 },
+    { label: '시스루 컷', minWidth: 84 },
+    { label: '다운펌', minWidth: 58 },
+    { label: '스핀', minWidth: 47 },
+  ];
 
   const topExperts: TopExpert[] = [
     {
@@ -160,23 +166,31 @@ const HomePage = () => {
 
       <main className="flex-1 overflow-y-auto pb-6 scrollbar-hide">
         <section className="px-4 pt-4">
-          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory">
+          <div className="flex gap-[6px] overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory">
             {banners.map((banner) => (
               <article
                 key={banner.id}
-                className="relative h-[184px] w-[300px] shrink-0 overflow-hidden rounded-[14px] bg-gradient-to-br from-[#7b7c7f] via-[#5b5c60] to-[#3c3d40] snap-start"
+                className="relative h-[340px] w-[340px] shrink-0 overflow-hidden rounded-[12px] bg-[#c7c9cf] snap-start"
               >
                 {banner.image && (
                   <img
                     src={banner.image}
                     alt=""
-                    className="absolute inset-0 h-full w-full object-cover"
+                    className="absolute inset-0 h-full w-full rounded-[11.333px] object-cover"
                   />
                 )}
-                <div className="absolute inset-0 bg-black/10" />
-                <div className="absolute bottom-4 left-4 space-y-1 text-white">
-                  <p className="text-[12px] font-medium">{banner.title}</p>
-                  <p className="text-[18px] font-semibold leading-[1.35]">
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background:
+                      'linear-gradient(180deg, rgba(111,111,111,0) 52.404%, rgba(89,89,89,0.9) 100%)',
+                  }}
+                />
+                <div className="absolute left-6 top-[244px] w-[292px] text-[#f4f4f5]">
+                  <p className="text-[25.5px] font-semibold leading-[1.5]">
+                    {banner.title}
+                  </p>
+                  <p className="text-[25.5px] font-semibold leading-[1.5]">
                     {banner.subtitle}
                   </p>
                 </div>
@@ -185,20 +199,34 @@ const HomePage = () => {
           </div>
         </section>
 
-        <section className="px-4 pt-5">
-          <div className="flex items-start justify-between gap-2">
+        <section className="px-4 pt-[33px]">
+          <div className="flex items-start gap-[5px]">
             {categories.map((category) => (
               <button
                 key={category.id}
                 onClick={() => navigate(category.route)}
-                className="flex flex-1 flex-col items-center gap-2"
+                className={`flex flex-col items-center gap-[1px] ${
+                  category.id === 'hair'
+                    ? 'w-[80px]'
+                    : category.id === 'skin'
+                      ? 'w-[80px]'
+                      : 'w-[84px]'
+                }`}
               >
                 {category.icon ? (
-                  <img src={category.icon} alt="" className="h-10 w-10" />
+                  <img
+                    src={category.icon}
+                    alt=""
+                    width={80}
+                    height={80}
+                    className="block h-[80px] w-[80px]"
+                  />
                 ) : (
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f4f4f5]" />
+                  <div className="flex h-[80px] w-[80px] items-center justify-center rounded-full bg-[#f4f4f5]" />
                 )}
-                <span className="text-[12px] text-[#505158]">{category.label}</span>
+                <span className="text-[12px] leading-[1.4] text-[#989ba2]">
+                  {category.label}
+                </span>
               </button>
             ))}
           </div>
@@ -206,48 +234,53 @@ const HomePage = () => {
 
         <section className="px-4 pt-7">
           <div className="flex items-center justify-between">
-            <h2 className="text-[16px] font-semibold text-[#0f0f10]">
+            <h2 className="text-[18px] font-semibold text-[#0f0f10]">
               지금 가장 인기있는 전문가 TOP3
             </h2>
           </div>
-          <div className="mt-3 flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          <div className="mt-[16px] flex gap-[8px] overflow-x-auto pb-2 scrollbar-hide">
             {topTabs.map((tab) => (
               <button
-                key={tab}
-                onClick={() => setSelectedTopTab(tab)}
-                className={`rounded-full px-3 py-1 text-[12px] font-semibold transition-colors ${
-                  selectedTopTab === tab
-                    ? 'bg-[#0f0f10] text-white'
-                    : 'border border-[#e1e2e4] text-[#505158]'
+                key={tab.label}
+                onClick={() => setSelectedTopTab(tab.label)}
+                className={`flex h-[30px] items-center justify-center whitespace-nowrap rounded-[4px] px-[12px] text-[13px] ${
+                  selectedTopTab === tab.label
+                    ? 'bg-[#46474c] text-white font-semibold'
+                    : 'border border-[#dbdcdf] text-[#46474c] font-normal'
                 }`}
+                style={{ minWidth: tab.minWidth }}
               >
-                {tab}
+                {tab.label}
               </button>
             ))}
           </div>
           <div className="mt-4 space-y-4">
             {topExperts.map((expert, index) => (
-              <div key={expert.id} className="flex items-start gap-3">
-                <span className="pt-1 text-[14px] font-semibold text-[#989ba2]">
-                  {index + 1}
-                </span>
-                <div className="h-[60px] w-[60px] shrink-0 overflow-hidden rounded-full bg-[#e1e2e4]">
-                  {expert.avatar && (
-                    <img src={expert.avatar} alt="" className="h-full w-full object-cover" />
-                  )}
-                </div>
-                <div className="flex-1 space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[14px] font-semibold text-[#0f0f10]">
-                      {expert.name}
-                    </span>
-                    <span className="rounded-[2px] bg-[#e5f4ff] px-2 py-0.5 text-[12px] text-[#008bff]">
-                      {expert.category}
-                    </span>
+              <div key={expert.id} className="flex h-[67px] w-[342px] items-center justify-between">
+                <div className="flex items-center gap-[9px]">
+                  <span className="w-[12px] text-center text-[18px] font-semibold leading-[1.1] text-[#656870]">
+                    {index + 1}
+                  </span>
+                  <div className="flex items-center gap-[15px]">
+                    <div className="h-[60px] w-[60px] shrink-0 overflow-hidden rounded-full bg-[#e1e2e4]">
+                      {expert.avatar && (
+                        <img src={expert.avatar} alt="" className="h-full w-full object-cover" />
+                      )}
+                    </div>
+                    <div className="flex flex-col items-start">
+                      <div className="flex items-center gap-[8px]">
+                        <span className="rounded-[2px] bg-[#e5f4ff] px-[8px] py-[4px] text-[12px] text-[#008bff]">
+                          {expert.category}
+                        </span>
+                        <span className="text-[14px] font-semibold text-[#292a2d]">
+                          {expert.name}
+                        </span>
+                      </div>
+                      <p className="mt-[6px] line-clamp-2 w-[184px] text-[13px] text-[#878a93]">
+                        {expert.summary}
+                      </p>
+                    </div>
                   </div>
-                  <p className="line-clamp-2 text-[13px] text-[#878a93]">
-                    {expert.summary}
-                  </p>
                 </div>
                 <button className="flex h-6 w-6 items-center justify-center">
                   <img src={heartIcon} alt="찜" className="h-6 w-6" />
@@ -259,44 +292,43 @@ const HomePage = () => {
 
         <section className="pt-10">
           <div className="flex items-center justify-between px-4">
-            <h2 className="text-[16px] font-semibold text-[#0f0f10]">실시간 후기 확인하기</h2>
-            <button className="flex items-center gap-1 text-[12px] text-[#989ba2]">
+            <h2 className="text-[18px] font-semibold text-[#0f0f10]">실시간 후기 확인하기</h2>
+            <button className="flex items-center gap-[2px] text-[14px] text-[#70737c]">
               전체보기
               <ChevronRight className="h-4 w-4" />
             </button>
           </div>
-          <div className="mt-4 flex gap-3 overflow-x-auto px-4 pb-2 scrollbar-hide snap-x snap-mandatory">
+          <div className="mt-4 flex gap-2 overflow-x-auto px-4 pb-2 scrollbar-hide snap-x snap-mandatory">
             {reviews.map((review) => (
               <article
                 key={review.id}
-                className="flex w-[300px] shrink-0 flex-col gap-4 rounded-[12px] border border-[#f4f4f5] bg-white pb-4 snap-start"
+                className="flex h-[410px] w-[300px] shrink-0 flex-col rounded-[8px] border border-[#e1e2e4] bg-white snap-start"
               >
-                <div className="flex items-center gap-3 px-4 pt-4">
-                  <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full bg-[#e1e2e4]">
+                <div className="flex items-center gap-[10px] border-b border-[#f4f4f5] px-4 py-[14px]">
+                  <div className="h-[36px] w-[36px] shrink-0 overflow-hidden rounded-full bg-[#e1e2e4]">
                     {review.avatar && (
                       <img src={review.avatar} alt="" className="h-full w-full object-cover" />
                     )}
                   </div>
-                  <div className="flex flex-1 flex-col gap-1">
-                    <div className="flex items-center gap-2">
+                  <div className="flex flex-1 flex-col gap-[4px]">
+                    <div className="flex items-center gap-[2px]">
                       <span className="text-[14px] font-semibold text-[#0f0f10]">
                         {review.name}
                       </span>
+                      <ChevronRight className="h-4 w-4 text-[#0f0f10]" />
                     </div>
-                    <div className="flex items-center gap-2 text-[13px] text-[#878a93]">
-                      <div className="flex items-center gap-1 text-[#ffb800]">{'★★★★★'}</div>
-                      <span className="text-[#989ba2]">{review.rating}</span>
-                      <span className="text-[#e1e2e4]">|</span>
-                      <span>{review.date}</span>
+                    <div className="flex items-center gap-[8px] text-[13px] text-[#989ba2]">
+                      <div className="flex items-center gap-1 text-[#ffb800]">★★★★★</div>
+                      <span>{review.rating}</span>
                     </div>
                   </div>
                 </div>
-                <div className="px-4">
-                  <div className="grid grid-cols-2 gap-2 overflow-hidden rounded-[10px]">
+                <div className="px-4 pt-4">
+                  <div className="flex gap-[8px]">
                     {review.images.map((image, index) => (
                       <div
                         key={`${review.id}-image-${index}`}
-                        className="h-[96px] w-full bg-[#e1e2e4]"
+                        className="h-[130px] w-[130px] overflow-hidden rounded-[4px] bg-[#e1e2e4]"
                       >
                         {image && (
                           <img src={image} alt="" className="h-full w-full object-cover" />
@@ -305,12 +337,20 @@ const HomePage = () => {
                     ))}
                   </div>
                 </div>
-                <p className="px-4 text-[13px] text-[#505158]">{review.content}</p>
-                <div className="flex gap-2 px-4">
-                  <span className="rounded-[2px] bg-[#e5f4ff] px-2 py-0.5 text-[12px] text-[#008bff]">
+                <div className="px-4 pt-3">
+                  <div className="flex items-center gap-[12px] text-[13px] text-[#989ba2]">
+                    <span className="font-semibold text-[#878a93]">박덕호</span>
+                    <span>{review.date}</span>
+                  </div>
+                  <p className="mt-2 text-[13px] leading-[1.4] text-[#505158]">
+                    {review.content}
+                  </p>
+                </div>
+                <div className="flex gap-[6px] px-4 pb-4 pt-2">
+                  <span className="rounded-[2px] bg-[#e5f4ff] px-[8px] py-[4px] text-[12px] text-[#008bff]">
                     {review.category}
                   </span>
-                  <span className="rounded-[2px] bg-[#f4f4f5] px-2 py-0.5 text-[12px] text-[#46474c]">
+                  <span className="rounded-[2px] bg-[#f4f4f5] px-[8px] py-[4px] text-[12px] text-[#46474c]">
                     {review.concern}
                   </span>
                 </div>
@@ -325,7 +365,7 @@ const HomePage = () => {
         </section>
       </main>
 
-      <nav className="flex items-center justify-between border-t border-[#f4f4f5] px-4 pb-3 pt-2">
+      <nav className="flex h-[69px] items-center justify-between border-t border-[#f4f4f5] px-4 pb-[12px] pt-[12px]">
         <button className="flex flex-1 flex-col items-center gap-1 text-[#0f0f10]">
           <img src={homeIcon} alt="홈" className="h-6 w-6" />
           <span className="text-[12px] font-semibold">홈</span>
