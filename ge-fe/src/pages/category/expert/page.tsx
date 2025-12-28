@@ -1,4 +1,5 @@
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   CheckCircle2,
   ChevronDown,
@@ -9,19 +10,12 @@ import {
   Star,
 } from 'lucide-react';
 import heartIcon from '../../../images/mypage/heart.svg';
+import { portfolioItems } from './portfolio-data';
 
 type ReviewCard = {
   id: number;
   title: string;
   content: string;
-};
-
-type PortfolioCard = {
-  id: number;
-  title: string;
-  tags: string[];
-  concern: string;
-  solution: string;
 };
 
 type RelatedExpert = {
@@ -32,6 +26,22 @@ type RelatedExpert = {
 
 const ExpertInfoPage = () => {
   const navigate = useNavigate();
+  const { expertId } = useParams();
+  const portfolioPath = `/experts/${expertId ?? '1'}/portfolio`;
+  const [expandedPortfolio, setExpandedPortfolio] = useState<
+    Record<number, { concern: boolean; solution: boolean }>
+  >({});
+
+  const handleTogglePortfolio = (id: number, field: 'concern' | 'solution') => {
+    setExpandedPortfolio((prev) => ({
+      ...prev,
+      [id]: {
+        concern: prev[id]?.concern ?? false,
+        solution: prev[id]?.solution ?? false,
+        [field]: !(prev[id]?.[field] ?? false),
+      },
+    }));
+  };
 
   const reviewCards: ReviewCard[] = [
     {
@@ -42,21 +52,11 @@ const ExpertInfoPage = () => {
     {
       id: 2,
       title: '앞머리 다운펌',
-      content: '곱슬머리 너무 심했는데 전문가님이 잘 잡아주셔서 덕분에 잘...',
+      content: '곱슬머리 너무 심했는데 전문가님이 잘 잡아주셔서 덕분에 잘 ',
     },
   ];
 
-  const portfolioCards: PortfolioCard[] = [
-    {
-      id: 1,
-      title: '스핀 스왈로브펌',
-      tags: ['탈모', '스타일링', '키워드', '+2'],
-      concern:
-        '나이 들면서 정수리쪽 탈모가 너무 심해져서 걱정이에요. 다음주에 당장 딸내미 결혼식이 있는데 어떻게 파마를 해서 탈모를 가릴 방법은 없을까요?',
-      solution:
-        '이미 탈모가 많이 진행된 상태여서 열처리를 해야하는 강한 펌은 시술이 불가능하지만 열처리 없는 스핀 스왈로프펌으로 진행하여 정수리쪽 탈모를 가리는 솔루션을 드렸습니다.',
-    },
-  ];
+  const portfolioCards = portfolioItems;
 
   const relatedExperts: RelatedExpert[] = [
     {
@@ -80,7 +80,7 @@ const ExpertInfoPage = () => {
 
   return (
     <div className="flex h-full flex-col bg-white">
-      <main className="relative flex-1 overflow-y-auto pb-[120px] scrollbar-hide">
+      <main className="relative flex-1 overflow-x-hidden overflow-y-auto pb-[120px] scrollbar-hide">
         <div className="relative mx-auto h-[2545px] w-[375px] bg-white">
           <div className="absolute left-[16px] top-[53px] flex items-center gap-[15px]">
             <button
@@ -196,17 +196,23 @@ const ExpertInfoPage = () => {
           <div className="absolute left-0 top-[1011px] h-[610px] w-[375px] bg-white">
             <div className="absolute left-[15px] top-[40px] flex w-[343px] items-center justify-between">
               <h2 className="text-[18px] font-semibold text-[#0f0f10]">포트폴리오</h2>
-              <button className="flex items-center gap-[2px] text-[14px] text-[#70737c]">
+              <button
+                onClick={() => navigate(portfolioPath)}
+                className="flex items-center gap-[2px] text-[14px] text-[#70737c]"
+              >
                 전체보기
                 <ChevronRight className="h-[24px] w-[24px]" />
               </button>
             </div>
-            <div className="absolute left-[16px] top-[86px] flex gap-[12px] overflow-x-auto scrollbar-hide">
-              {portfolioCards.map((card) => (
-                <article
-                  key={card.id}
-                  className="h-[439px] w-[322px] shrink-0 rounded-[12px] border border-[#e1e2e4] bg-white p-[16px]"
-                >
+            <div className="absolute left-[16px] top-[86px] flex w-[343px] gap-[12px] overflow-x-auto scrollbar-hide">
+              {portfolioCards.map((card) => {
+                const concernExpanded = expandedPortfolio[card.id]?.concern ?? false;
+                const solutionExpanded = expandedPortfolio[card.id]?.solution ?? false;
+                return (
+                  <article
+                    key={card.id}
+                    className="h-[439px] w-[322px] shrink-0 rounded-[12px] border border-[#e1e2e4] bg-white p-[16px]"
+                  >
                   <div className="flex items-start justify-between">
                     <div>
                       <p className="text-[14px] font-semibold text-[#292a2d]">{card.title}</p>
@@ -216,9 +222,17 @@ const ExpertInfoPage = () => {
                       <ChevronRight className="h-[20px] w-[20px]" />
                     </button>
                   </div>
-                  <div className="mt-[12px] flex gap-[6px]">
-                    <div className="h-[130px] w-[130px] rounded-[4px] bg-[#e1e2e4]" />
-                    <div className="h-[130px] w-[130px] rounded-[4px] bg-[#e1e2e4]" />
+                  <div className="mt-[12px] flex h-[164px] items-center gap-[8px]">
+                    <div className="relative h-[164px] w-[167.5px] overflow-hidden rounded-[12px] bg-[#e1e2e4]">
+                      <span className="absolute bottom-[8px] left-[8px] rounded-[4px] bg-black/40 px-[6px] py-[2px] text-[14px] text-white">
+                        전
+                      </span>
+                    </div>
+                    <div className="relative h-[164px] w-[167.5px] overflow-hidden rounded-[12px] bg-[#e1e2e4]">
+                      <span className="absolute bottom-[8px] right-[8px] rounded-[4px] bg-black/40 px-[6px] py-[2px] text-[14px] text-white">
+                        후
+                      </span>
+                    </div>
                   </div>
                   <div className="mt-[12px] flex flex-wrap gap-[6px]">
                     {card.tags.map((tag) => (
@@ -232,14 +246,45 @@ const ExpertInfoPage = () => {
                   </div>
                   <div className="mt-[12px] space-y-[6px]">
                     <p className="text-[14px] font-semibold text-[#292a2d]">고객의 고민</p>
-                    <p className="text-[13px] leading-[1.4] text-[#505158]">{card.concern}</p>
+                    <div
+                      className={`text-[13px] leading-[1.4] text-[#505158] ${
+                        concernExpanded
+                          ? 'max-h-[90px] overflow-y-auto scrollbar-hide'
+                          : 'max-h-[36px] overflow-hidden'
+                      }`}
+                    >
+                      {card.concern}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleTogglePortfolio(card.id, 'concern')}
+                      className="text-left text-[13px] text-[#c2c4c8]"
+                    >
+                      {concernExpanded ? '접기' : '더보기'}
+                    </button>
                   </div>
                   <div className="mt-[12px] space-y-[6px]">
                     <p className="text-[14px] font-semibold text-[#292a2d]">솔루션</p>
-                    <p className="text-[13px] leading-[1.4] text-[#505158]">{card.solution}</p>
+                    <div
+                      className={`text-[13px] leading-[1.4] text-[#505158] ${
+                        solutionExpanded
+                          ? 'max-h-[90px] overflow-y-auto scrollbar-hide'
+                          : 'max-h-[36px] overflow-hidden'
+                      }`}
+                    >
+                      {card.solution}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleTogglePortfolio(card.id, 'solution')}
+                      className="text-left text-[13px] text-[#c2c4c8]"
+                    >
+                      {solutionExpanded ? '접기' : '더보기'}
+                    </button>
                   </div>
                 </article>
-              ))}
+              );
+              })}
             </div>
             <div className="absolute left-1/2 top-[551px] h-[3px] w-[55px] -translate-x-1/2 bg-[#e1e2e4]">
               <div className="h-[3px] w-[18px] bg-[#429ff0]" />
@@ -253,8 +298,7 @@ const ExpertInfoPage = () => {
               <div className="rounded-[12px] border border-[#e1e2e4] bg-white p-[16px]">
                 <p className="text-[16px] font-semibold text-[#292a2d]">실시간 화상 상담</p>
                 <p className="mt-[4px] text-[13px] leading-[1.4] text-[#878a93]">
-                  전문가와 화상으로 15분 상담을 진행합니다. 상담한 내용을 바탕으로 전문가가 작성한 솔루션지는 상담이 끝나고
-                  한 시간 내로 전송해드립니다.
+                  전문가와 화상으로 15분 상담을 진행합니다. 상담한 내용을 바탕으로 전문가가 작성한 솔루션지는 상담이 끝나고 한 시간 내로 전송해드립니다.
                 </p>
                 <div className="my-[12px] h-px bg-[#e1e2e4]" />
                 <div className="flex items-center justify-between text-[13px] text-[#878a93]">
@@ -265,8 +309,8 @@ const ExpertInfoPage = () => {
               <div className="rounded-[12px] border border-[#e1e2e4] bg-white p-[16px]">
                 <p className="text-[16px] font-semibold text-[#292a2d]">메세지 상담</p>
                 <p className="mt-[4px] text-[13px] leading-[1.4] text-[#878a93]">
-                  상담 신청 시 진행되는 설문조사 답변을 바탕으로 전문가가 24시간 내로 솔루션지를 보내드립니다. 솔루션지를
-                  읽고 생기는 추가 질문은 채팅을 통해 한 번 더 질문할 수 있습니다.
+                  상담 신청 시 진행되는 설문조사 답변을 바탕으로 전문가가 24시간 내로 솔루션지를 보내드립니다. 솔루션지를 읽고
+                  생기는 추가 질문은 채팅을 통해 한 번 더 문의할 수 있습니다.
                 </p>
                 <div className="my-[12px] h-px bg-[#e1e2e4]" />
                 <div className="flex items-center justify-between text-[13px] text-[#878a93]">
@@ -294,7 +338,7 @@ const ExpertInfoPage = () => {
               <h2 className="text-[18px] font-semibold text-[#0f0f10]">
                 이런 <span className="text-[#008bff]">헤어</span> 전문가는 어떠세요?
               </h2>
-              <div className="mt-[12px] flex gap-[12px] overflow-x-auto scrollbar-hide">
+              <div className="mt-[12px] flex w-[343px] gap-[12px] overflow-x-auto scrollbar-hide">
                 {relatedExperts.map((expert) => (
                   <article
                     key={expert.id}

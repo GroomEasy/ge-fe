@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Search } from 'lucide-react';
 import { useAuthStore } from '../../stores/useAuthStore';
 import hairIcon from '../../images/home/Hair.svg';
 import fashionIcon from '../../images/home/Fashion.svg';
 import makeupIcon from '../../images/home/MakeUp.svg';
 import skinIcon from '../../images/home/Skin.svg';
-import searchIcon from '../../images/home/search.svg';
 import heartIcon from '../../images/mypage/heart.svg';
 import homeIcon from '../../images/home/home.svg';
 import exploreIcon from '../../images/home/search.svg';
@@ -85,29 +84,29 @@ const HomePage = () => {
   const topTabs = [
     { label: '전체', minWidth: 47 },
     { label: '헤어', minWidth: 47 },
-    { label: '시스루 컷', minWidth: 84 },
+    { label: '시스루 댄디', minWidth: 84 },
     { label: '다운펌', minWidth: 58 },
-    { label: '스핀', minWidth: 47 },
+    { label: '스킨', minWidth: 47 },
   ];
 
   const topExperts: TopExpert[] = [
     {
       id: 1,
-      name: '김바보 상담사',
-      category: '헤어',
+      name: '강현우',
+      category: '메이크업',
       summary:
         '김바보님을 위한 솔루션지가 도착했어요. 24시간 내에 질문이 가능하며 시간이 지나면 질문이 불가능해요.',
     },
     {
       id: 2,
-      name: '최지원 상담사',
+      name: '최영인',
       category: '헤어',
       summary:
         '이지지원님을 위한 솔루션지가 도착했어요. 24시간 내에 질문이 가능하며 시간이 지나면 질문이 불가능해요.',
     },
     {
       id: 3,
-      name: '윤나영 상담사',
+      name: '김준영',
       category: '패션',
       summary:
         '윤나영님을 위한 솔루션지가 도착했어요. 24시간 내에 질문이 가능하며 시간이 지나면 질문이 불가능해요.',
@@ -117,24 +116,24 @@ const HomePage = () => {
   const reviews: ReviewCard[] = [
     {
       id: 1,
-      name: '용민호 전문가',
+      name: '옹민호 전문가',
       rating: 4.7,
       date: '2025.10.08',
       content:
-        '피부 결이 얇아서 메이크업 받으면 둥둥 떠보였는데 성정수 상담가님 덕분에 프로필 사진 촬영 잘했어요.',
-      category: '메이크업',
-      concern: '민감성 피부',
+        '머리가 악성곱슬이어서 너무 고민이었는데 옹민호 전문가님 만나고 광명 찾았어요~!!! 원래는 2주만 지나도 바로 곱슬곱슬해지는데 지금 한 달이 지나도 직모에요.',
+      category: '헤어',
+      concern: '탈모',
       images: ['', ''],
     },
     {
       id: 2,
-      name: '이민기 전문가',
+      name: '옹민호 전문가',
       rating: 4.7,
       date: '2025.10.08',
       content:
-        '평소 붓기와 각질이 고민이었는데 관리법을 자세히 알려주셔서 효과가 확실했어요.',
-      category: '스킨',
-      concern: '각질 케어',
+        '평소에 여드름도 많아서 메이크업 받으면 둥둥 떴는데 성정수 상담가님 덕분에 너무 멋지게 프로필 사진 촬영하고 왔어요! 상세하게 알려주셔서 덕분에 메이크업 잘하고 갔습니다.',
+      category: '메이크업',
+      concern: '?',
       images: ['', ''],
     },
   ];
@@ -156,7 +155,7 @@ const HomePage = () => {
         </div>
         <div className="flex items-center gap-[14px]">
           <button className="flex h-6 w-6 items-center justify-center">
-            <img src={searchIcon} alt="검색" className="h-6 w-6" />
+            <Search className="h-6 w-6 text-[#0f0f10]" />
           </button>
           <button className="flex h-6 w-6 items-center justify-center">
             <img src={heartIcon} alt="찜" className="h-6 w-6" />

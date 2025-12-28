@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
+import starIcon from '../../../images/reviews/star.svg';
 
 type ReviewItem = {
   id: number;
@@ -21,7 +22,7 @@ const CategoryBestReviewsPage = () => {
       rating: 4.7,
       date: '2025.10.08',
       content:
-        '머리가 악성곱슬이어서 너무 고민이었는데 옹민호 전문가님 만나고 광명찾았어요. 원래는 2주만 지나도 바로 곱슬곱슬해지는데 지금 한 달이 지나도 직모예요.',
+        '머리가 악성곱슬이어서 너무 고민이었는데 옹민호 전문가님 만나고 광명 찾았어요~!!! 원래는 2주만 지나도 바로 곱슬곱슬해지는데 지금 한 달이 지나도 직모에요. ',
       tags: ['헤어', '메세지 상담', '탈모'],
       images: ['', '', ''],
     },
@@ -31,7 +32,7 @@ const CategoryBestReviewsPage = () => {
       rating: 5.0,
       date: '2025.06.12',
       content:
-        '자꾸 앞머리가 휘어서 고민이 많았는데 가영쌤 덕분에 멋있게 앞머리 내릴 수 있어서 너무 만족스러워요. 다음에도 방문해서 모류교정을 받을게요!',
+        '자꾸 앞머리가 휘어서 고민이 많았는데 가영쌤 덕분에 멋있게 앞머리 내릴 수 있어서 너무 만족스러워요. 다음에도 방문해서 모류교정 받을게요!',
       tags: ['헤어', '메세지 상담', '모류교정'],
       images: ['', '', ''],
     },
@@ -69,7 +70,7 @@ const CategoryBestReviewsPage = () => {
                 <p className="text-[12px] font-medium text-[#008bff]">최근 후기 63건</p>
                 <div className="flex items-center gap-2 text-[13px]">
                   <span className="font-semibold text-[#0f0f10]">옹민호 전문가</span>
-                  <span className="text-[#ffb800]">★</span>
+                  <img src={starIcon} alt="" className="h-[18px] w-[18px]" />
                   <span className="text-[#989ba2]">4.7</span>
                 </div>
               </div>
@@ -85,7 +86,16 @@ const CategoryBestReviewsPage = () => {
                 <div>
                   <p className="text-[14px] font-semibold text-[#878a93]">{firstReview.author}</p>
                   <div className="flex items-center gap-2 text-[13px] text-[#989ba2]">
-                    <span className="text-[#ffb800]">★★★★★</span>
+                    <div className="flex items-center gap-[2px]">
+                      {Array.from({ length: 5 }).map((_, index) => (
+                        <img
+                          key={`star-${secondReview.id}-${index}`}
+                          src={starIcon}
+                          alt=""
+                          className="h-[16px] w-[16px]"
+                        />
+                      ))}
+                    </div>
                     <span>{firstReview.rating}</span>
                     <span className="text-[#e1e2e4]">|</span>
                     <span>{firstReview.date}</span>
@@ -140,7 +150,7 @@ const CategoryBestReviewsPage = () => {
                 <p className="text-[12px] font-medium text-[#008bff]">최근 후기 121건</p>
                 <div className="flex items-center gap-2 text-[13px]">
                   <span className="font-semibold text-[#0f0f10]">이가영 전문가</span>
-                  <span className="text-[#ffb800]">★</span>
+                  <img src={starIcon} alt="" className="h-[18px] w-[18px]" />
                   <span className="text-[#989ba2]">5.0</span>
                 </div>
               </div>
@@ -154,7 +164,16 @@ const CategoryBestReviewsPage = () => {
                 <div>
                   <p className="text-[14px] font-semibold text-[#878a93]">{secondReview.author}</p>
                   <div className="flex items-center gap-2 text-[13px] text-[#989ba2]">
-                    <span className="text-[#ffb800]">★★★★★</span>
+                    <div className="flex items-center gap-[2px]">
+                      {Array.from({ length: 5 }).map((_, index) => (
+                        <img
+                          key={`star-${secondReview.id}-${index}`}
+                          src={starIcon}
+                          alt=""
+                          className="h-[16px] w-[16px]"
+                        />
+                      ))}
+                    </div>
                     <span>{secondReview.rating}</span>
                     <span className="text-[#e1e2e4]">|</span>
                     <span>{secondReview.date}</span>

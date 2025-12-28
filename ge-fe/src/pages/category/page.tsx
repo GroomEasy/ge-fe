@@ -47,20 +47,20 @@ const CategoryLandingPage = () => {
       name: '김이슬 전문가',
       category: '헤어',
       summary:
-        '바쁜 아침, 트렌디 머리로 간편한 스타일링을 알려드릴게요.',
+        '바쁜 아침, 트렌디한 머리와 간편한 손질법을 여러분께 선물합니다.',
     },
     {
       id: 2,
       name: '박규영 전문가',
       category: '헤어',
       summary:
-        '얼굴 라인 고민까지 디자인으로 해결, 연속 칼맞춤 디자인으로…',
+        '짧은 머리부터 긴머리까지 남자머리의 정석, 오래 유지되는 디자인으로 얼굴형에 어울리는 맞춤형으로 디자인 해드리겠습니다.',
     },
     {
       id: 3,
       name: '이민준 전문가',
       category: '헤어',
-      summary: '어울리는 머리가 뭔지 몰라서 고민이신 분들! 인생머리 찾아드려요.',
+      summary: '어울리는 머리가 뭔지 몰라서 고민이신 분들! 제가 인생머리 찾아드릴게요',
     },
   ];
 
@@ -75,17 +75,17 @@ const CategoryLandingPage = () => {
     },
     {
       id: 2,
-      name: '이재훈',
+      name: '이지훈',
       category: '헤어',
       summary:
-        '각 모질에 따른 손질법 및 얼굴형 타입에 맞는 디자인을 찾아드립니다.',
+        '각 모질에 따른 손상도와 얼굴형 두상에 맞춰 1대1로 정성껏 디자인해 드리고 있습니다.',
       available: true,
     },
   ];
 
   return (
     <div className="flex h-full flex-col bg-white">
-      <header className="flex items-center justify-between px-4 pb-[10px] pt-[14px]">
+      <header className="flex h-[60px] items-center justify-between px-4 pt-[14px]">
         <button className="flex items-center gap-1 text-[18px] font-semibold text-[#0f0f10]">
           <span>{categoryLabel}</span>
           <ChevronDown className="h-4 w-4" />
@@ -101,7 +101,7 @@ const CategoryLandingPage = () => {
       </header>
 
       <main className="flex-1 overflow-y-auto pb-6 scrollbar-hide">
-        <section className="relative h-[246px] w-full overflow-hidden">
+        <section className="relative h-[246px] w-[375px] overflow-hidden">
           <div className="absolute left-[-25px] top-[-8px] h-[262px] w-[400px] bg-[#d2d4d8]" />
           <div className="absolute bottom-0 left-[-20px] h-[144.5px] w-[416px] bg-gradient-to-b from-transparent to-black/50" />
           <div className="absolute left-[19.5px] top-[125px] w-[165px] text-white">
@@ -226,7 +226,7 @@ const CategoryLandingPage = () => {
         <section className="px-4 pt-[32px]">
           <div className="flex items-center justify-between">
             <h2 className="text-[18px] font-semibold text-[#0f0f10]">전문가 리스트</h2>
-            <button className="flex items-center gap-[2px] text-[12px] text-[#989ba2]">
+            <button className="flex items-center gap-[2px] text-[14px] text-[#70737c]">
               전체보기
               <ChevronRight className="h-4 w-4" />
             </button>
@@ -235,39 +235,42 @@ const CategoryLandingPage = () => {
             {expertList.map((expert) => (
               <article
                 key={expert.id}
-                className="h-[184px] w-[342px] rounded-[12px] border border-[#dbdcdf] bg-white p-[16px]"
+                className="relative h-[184px] w-[342px] rounded-[12px] border border-[#dbdcdf] bg-white"
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex gap-[12px]">
-                    <div className="h-[60px] w-[60px] shrink-0 rounded-full bg-[#e1e2e4]" />
-                    <div className="flex flex-col gap-[6px]">
-                      <div className="flex items-center gap-[8px]">
-                        <span className="rounded-[2px] bg-[#e5f4ff] px-[8px] py-[4px] text-[12px] text-[#008bff]">
-                          {expert.category}
-                        </span>
-                        <span className="text-[14px] font-semibold text-[#292a2d]">
+                <div className="absolute left-[15px] top-[15px] flex w-[313px] items-start justify-between">
+                  <div className="flex w-[289px] flex-col gap-[12px]">
+                    <div className="flex items-center gap-[16px]">
+                      <div className="h-[60px] w-[60px] shrink-0 rounded-full bg-[#e1e2e4]" />
+                      <div className="flex w-[116px] flex-col gap-[10px]">
+                        <p className="text-[16px] font-semibold leading-[1.1] text-[#292a2d]">
                           {expert.name}
-                        </span>
+                        </p>
+                        <div className="flex items-center gap-[6px]">
+                          <span className="rounded-[2px] bg-[#e5f4ff] px-[8px] py-[4px] text-[12px] text-[#008bff]">
+                            {expert.category}
+                          </span>
+                          <span className="rounded-[2px] bg-[#f4f4f5] px-[8px] py-[4px] text-[12px] text-[#46474c]">
+                            모류교정
+                          </span>
+                        </div>
                       </div>
-                      <p className="text-[13px] leading-[1.4] text-[#878a93]">
-                        {expert.summary}
-                      </p>
                     </div>
+                    <p className="text-[13px] leading-[1.4] text-[#878a93]">
+                      {expert.summary}
+                    </p>
                   </div>
-                  <button className="flex h-6 w-6 items-center justify-center">
-                    <img src={heartIcon} alt="찜" className="h-6 w-6" />
+                  <button className="flex h-[24px] w-[24px] items-center justify-center">
+                    <img src={heartIcon} alt="찜" className="h-[24px] w-[24px]" />
                   </button>
                 </div>
-                <div className="mt-[12px] flex items-center justify-between">
-                  {expert.available ? (
-                    <span className="text-[13px] font-medium text-[#008bff]">바로 상담 가능</span>
-                  ) : (
-                    <span className="text-[13px] text-[#989ba2]">상담 불가</span>
-                  )}
-                  <button className="h-[28px] w-[84px] rounded-[4px] bg-[#0f0f10] text-[12px] font-medium text-white">
-                    상담 예약
-                  </button>
-                </div>
+                {expert.available && (
+                  <span className="absolute left-[15px] top-[151px] text-[13px] font-semibold text-[#008bff]">
+                    바로 상담 가능
+                  </span>
+                )}
+                <button className="absolute left-[240px] top-[135px] h-[32px] w-[84px] rounded-[4px] bg-[#171719] text-[14px] font-medium text-white">
+                  상담 예약
+                </button>
               </article>
             ))}
           </div>
