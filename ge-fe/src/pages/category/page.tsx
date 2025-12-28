@@ -1,16 +1,13 @@
 import { useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import {
-  ChevronDown,
-  ChevronRight,
-  Compass,
-  Heart,
-  Home,
-  MessageCircle,
-  Search,
-  User,
-  Users,
-} from 'lucide-react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
+import searchIcon from '../../images/home/search.svg';
+import heartIcon from '../../images/mypage/heart.svg';
+import homeIcon from '../../images/home/home.svg';
+import exploreIcon from '../../images/home/search.svg';
+import chatIcon from '../../images/home/chat.svg';
+import communityIcon from '../../images/home/community.svg';
+import mypageIcon from '../../images/home/mypage.svg';
 
 type TopExpert = {
   id: number;
@@ -88,17 +85,17 @@ const CategoryLandingPage = () => {
 
   return (
     <div className="flex h-full flex-col bg-white">
-      <header className="flex items-center justify-between px-4 pt-3">
+      <header className="flex items-center justify-between px-4 pt-[14px]">
         <button className="flex items-center gap-1 text-[16px] font-semibold text-[#0f0f10]">
           <span>{categoryLabel}</span>
           <ChevronDown className="h-4 w-4" />
         </button>
-        <div className="flex items-center gap-4">
-          <button className="rounded-full p-1 text-[#0f0f10] hover:bg-gray-50">
-            <Search className="h-5 w-5" />
+        <div className="flex items-center gap-[14px]">
+          <button className="flex h-6 w-6 items-center justify-center">
+            <img src={searchIcon} alt="검색" className="h-6 w-6" />
           </button>
-          <button className="rounded-full p-1 text-[#0f0f10] hover:bg-gray-50">
-            <Heart className="h-5 w-5" />
+          <button className="flex h-6 w-6 items-center justify-center">
+            <img src={heartIcon} alt="찜" className="h-6 w-6" />
           </button>
         </div>
       </header>
@@ -155,8 +152,8 @@ const CategoryLandingPage = () => {
                     </p>
                   </div>
                 </div>
-                <button className="rounded-full p-1 text-[#aeb0b6] hover:bg-gray-50">
-                  <Heart className="h-5 w-5" />
+                <button className="flex h-6 w-6 items-center justify-center">
+                  <img src={heartIcon} alt="찜" className="h-6 w-6" />
                 </button>
               </div>
             ))}
@@ -166,7 +163,10 @@ const CategoryLandingPage = () => {
         <section className="mt-8 bg-[#f4f8fb] px-4 py-6">
           <div className="flex items-center justify-between">
             <h2 className="text-[18px] font-semibold text-[#0f0f10]">베스트 후기</h2>
-            <button className="flex items-center gap-1 text-[14px] text-[#70737c]">
+            <button
+              onClick={() => navigate(`/category/${categoryKey}/reviews`)}
+              className="flex items-center gap-1 text-[14px] text-[#70737c]"
+            >
               전체보기
               <ChevronRight className="h-4 w-4" />
             </button>
@@ -184,7 +184,12 @@ const CategoryLandingPage = () => {
                   </div>
                 </div>
               </div>
-              <ChevronRight className="h-5 w-5 text-[#aeb0b6]" />
+              <button
+                onClick={() => navigate('/experts/1')}
+                className="rounded-full p-1 text-[#aeb0b6] hover:bg-gray-50"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
             </div>
             <div className="mt-4 h-px bg-[#e1e2e4]" />
             <div className="mt-4 grid grid-cols-4 gap-2">
@@ -243,8 +248,8 @@ const CategoryLandingPage = () => {
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-2">
-                    <button className="rounded-full p-1 text-[#aeb0b6] hover:bg-gray-50">
-                      <Heart className="h-5 w-5" />
+                    <button className="flex h-6 w-6 items-center justify-center">
+                      <img src={heartIcon} alt="찜" className="h-6 w-6" />
                     </button>
                     <button className="rounded-full bg-[#0f0f10] px-3 py-1 text-[12px] font-medium text-white">
                       상담 예약
@@ -257,31 +262,31 @@ const CategoryLandingPage = () => {
         </section>
       </main>
 
-      <nav className="flex items-center justify-between border-t border-[#f4f4f5] px-4 py-2">
+      <nav className="flex items-center justify-between border-t border-[#f4f4f5] px-4 pb-3 pt-2">
         <button
           onClick={() => navigate('/')}
           className="flex flex-1 flex-col items-center gap-1 text-[#0f0f10]"
         >
-          <Home className="h-6 w-6" />
+          <img src={homeIcon} alt="홈" className="h-6 w-6" />
           <span className="text-[12px] font-semibold">홈</span>
         </button>
         <button className="flex flex-1 flex-col items-center gap-1 text-[#aeb0b6]">
-          <Compass className="h-6 w-6" />
+          <img src={exploreIcon} alt="탐색" className="h-6 w-6" />
           <span className="text-[12px]">탐색</span>
         </button>
         <button
           onClick={() => navigate('/chat')}
           className="flex flex-1 flex-col items-center gap-1 text-[#aeb0b6]"
         >
-          <MessageCircle className="h-6 w-6" />
+          <img src={chatIcon} alt="채팅" className="h-6 w-6" />
           <span className="text-[12px]">채팅</span>
         </button>
         <button className="flex flex-1 flex-col items-center gap-1 text-[#aeb0b6]">
-          <Users className="h-6 w-6" />
+          <img src={communityIcon} alt="커뮤니티" className="h-6 w-6" />
           <span className="text-[12px]">커뮤니티</span>
         </button>
         <button className="flex flex-1 flex-col items-center gap-1 text-[#aeb0b6]">
-          <User className="h-6 w-6" />
+          <img src={mypageIcon} alt="마이페이지" className="h-6 w-6" />
           <span className="text-[12px]">마이페이지</span>
         </button>
       </nav>
