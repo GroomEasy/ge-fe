@@ -1,46 +1,136 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Heart } from 'lucide-react';
+import {
+  ChevronRight,
+  Compass,
+  Heart,
+  Home,
+  MessageCircle,
+  Search,
+  User,
+  Users,
+} from 'lucide-react';
 import { useAuthStore } from '../../stores/useAuthStore';
 
-// 임시 데이터 타입 (추후 백엔드 API 타입으로 교체)
-interface Expert {
+type Banner = {
+  id: number;
+  title: string;
+  subtitle: string;
+  image?: string;
+};
+
+type Category = {
+  id: string;
+  label: string;
+  icon?: string;
+  route: string;
+};
+
+type TopExpert = {
   id: number;
   name: string;
   category: string;
+  summary: string;
+  avatar?: string;
+};
+
+type ReviewCard = {
+  id: number;
+  name: string;
   rating: number;
-  image?: string;
-}
+  date: string;
+  content: string;
+  category: string;
+  concern: string;
+  avatar?: string;
+  images: string[];
+};
 
 const HomePage = () => {
   const navigate = useNavigate();
   const { isAuthenticated, initializeAuth } = useAuthStore();
-  const [selectedReviewTab, setSelectedReviewTab] = useState('헤어');
+  const [selectedTopTab, setSelectedTopTab] = useState('전체');
 
-  // 페이지 로드 시 Auth 초기화 (localStorage에서 복원)
   useEffect(() => {
     initializeAuth();
   }, [initializeAuth]);
-  
-  // 카테고리 데이터
-  const categories = [
-    { id: 'hair', name: 'Hair', icon: '' },
-    { id: 'fashion', name: 'Fashion', icon: '' },
-    { id: 'makeup', name: 'Makeup', icon: '' },
-    { id: 'skin', name: 'Skin', icon: '' },
+
+  const banners: Banner[] = [
+    {
+      id: 1,
+      title: '박철웅이 알려주는',
+      subtitle: '진짜 남자의 메이크업',
+    },
+    {
+      id: 2,
+      title: '전문가의 진짜 케어',
+      subtitle: '트러블 피부 맞춤 상담',
+    },
+    {
+      id: 3,
+      title: '스타일링이 달라지는',
+      subtitle: '퍼스널 컷 가이드',
+    },
   ];
 
-  // 후기 탭
-  const reviewTabs = ['헤어', '스킨케어', '패션', '메이크업'];
-
-  // 임시 전문가 데이터 (추후 백엔드 API에서 가져올 예정)
-  const topExperts: Expert[] = [
-    { id: 1, name: '전문가 이름', category: '메이크업', rating: 4.7 },
-    { id: 2, name: '전문가 이름', category: '메이크업', rating: 4.7 },
-    { id: 3, name: '전문가 이름', category: '메이크업', rating: 4.7 },
+  const categories: Category[] = [
+    { id: 'hair', label: 'Hair', route: '/category/hair' },
+    { id: 'fashion', label: 'Fashion', route: '/category/fashion' },
+    { id: 'makeup', label: 'Makeup', route: '/category/makeup' },
+    { id: 'skin', label: 'Skin', route: '/category/skin' },
   ];
 
-  // 마이페이지 클릭 핸들러
+  const topTabs = ['전체', '헤어', '시스루 컷', '다운펌', '스핀'];
+
+  const topExperts: TopExpert[] = [
+    {
+      id: 1,
+      name: '김바보 상담사',
+      category: '헤어',
+      summary:
+        '김바보님을 위한 솔루션지가 도착했어요. 24시간 내에 질문이 가능하며 시간이 지나면 질문이 불가능해요.',
+    },
+    {
+      id: 2,
+      name: '최지원 상담사',
+      category: '헤어',
+      summary:
+        '이지지원님을 위한 솔루션지가 도착했어요. 24시간 내에 질문이 가능하며 시간이 지나면 질문이 불가능해요.',
+    },
+    {
+      id: 3,
+      name: '윤나영 상담사',
+      category: '패션',
+      summary:
+        '윤나영님을 위한 솔루션지가 도착했어요. 24시간 내에 질문이 가능하며 시간이 지나면 질문이 불가능해요.',
+    },
+  ];
+
+  const reviews: ReviewCard[] = [
+    {
+      id: 1,
+      name: '용민호 전문가',
+      rating: 4.7,
+      date: '2025.10.08',
+      content:
+        '피부 결이 얇아서 메이크업 받으면 둥둥 떠보였는데 성정수 상담가님 덕분에 프로필 사진 촬영 잘했어요.',
+      category: '메이크업',
+      concern: '민감성 피부',
+      images: ['', ''],
+    },
+    {
+      id: 2,
+      name: '이민기 전문가',
+      rating: 4.7,
+      date: '2025.10.08',
+      content:
+        '평소 붓기와 각질이 고민이었는데 관리법을 자세히 알려주셔서 효과가 확실했어요.',
+      category: '스킨',
+      concern: '각질 케어',
+      images: ['', ''],
+    },
+  ];
+
   const handleMyPageClick = () => {
     if (isAuthenticated) {
       navigate('/profile');
@@ -50,168 +140,213 @@ const HomePage = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-white overflow-hidden">
-      {/* 헤더 */}
-      <header className="flex-shrink-0 bg-white z-10 px-4 py-3 flex items-center justify-between border-b border-gray-100">
-        <h1 className="text-xl font-bold">Menual</h1>
-        <div className="flex items-center gap-2">
-          <button className="p-1.5 hover:bg-gray-50 rounded-full transition-colors">
-            <Search className="w-5 h-5" />
+    <div className="flex h-full flex-col bg-white">
+      <header className="flex items-center justify-between px-4 pt-3">
+        <div className="flex items-center gap-1 text-[18px] font-semibold tracking-tight">
+          <span>MENUAL</span>
+          <span>.</span>
+        </div>
+        <div className="flex items-center gap-4">
+          <button className="rounded-full p-1 text-[#0f0f10] hover:bg-gray-50">
+            <Search className="h-5 w-5" />
           </button>
-          <button className="p-1.5 hover:bg-gray-50 rounded-full transition-colors">
-            <Heart className="w-5 h-5" />
+          <button className="rounded-full p-1 text-[#0f0f10] hover:bg-gray-50">
+            <Heart className="h-5 w-5" />
           </button>
         </div>
       </header>
 
-      {/* 메인 컨텐츠 */}
-      <main className="flex-1 overflow-y-auto scrollbar-hide">
-        {/* 가로 스크롤 배너 영역 */}
-        <section className="px-4 py-4">
-          <div className="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory">
-            {/* 배너 1 */}
-            <div className="w-60 h-60 bg-gray-200 rounded-lg shrink-0 snap-start" />
-            {/* 배너 2 */}
-            <div className="w-60 h-60 bg-gray-200 rounded-lg shrink-0 snap-center" />
-            {/* 배너 3 */}
-            <div className="w-60 h-60 bg-gray-200 rounded-lg shrink-0 snap-start" />
+      <main className="flex-1 overflow-y-auto pb-6 scrollbar-hide">
+        <section className="px-4 pt-4">
+          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory">
+            {banners.map((banner) => (
+              <article
+                key={banner.id}
+                className="relative h-[196px] w-[302px] shrink-0 overflow-hidden rounded-[16px] bg-gradient-to-br from-[#7b7c7f] via-[#5b5c60] to-[#3c3d40] snap-start"
+              >
+                {banner.image && (
+                  <img
+                    src={banner.image}
+                    alt=""
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
+                )}
+                <div className="absolute inset-0 bg-black/10" />
+                <div className="absolute bottom-4 left-4 space-y-1 text-white">
+                  <p className="text-[14px] font-semibold">{banner.title}</p>
+                  <p className="text-[16px] font-semibold">{banner.subtitle}</p>
+                </div>
+              </article>
+            ))}
           </div>
         </section>
 
-        {/* 카테고리 섹션 */}
-        <section className="px-4 py-4">
-          <div className="flex justify-between items-center gap-3">
+        <section className="px-4 pt-5">
+          <div className="flex items-start justify-between gap-2">
             {categories.map((category) => (
               <button
                 key={category.id}
-                className="flex flex-col items-center gap-2 flex-1"
+                onClick={() => navigate(category.route)}
+                className="flex flex-1 flex-col items-center gap-2"
               >
-                <div className="w-[50px] h-[50px] bg-gray-200 rounded-full flex items-center justify-center text-xl hover:bg-gray-300 transition-colors">
-                  {category.icon}
-                </div>
-                <span className="text-[11px] text-gray-600">{category.name}</span>
+                {category.icon ? (
+                  <img src={category.icon} alt="" className="h-11 w-11" />
+                ) : (
+                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#f4f4f5]" />
+                )}
+                <span className="text-[12px] text-[#505158]">{category.label}</span>
               </button>
             ))}
           </div>
         </section>
 
-        {/* 전문가 TOP3 섹션 */}
-        <section className="px-4 py-6">
-          <h2 className="text-base font-bold mb-4">지금 가장 인기있는 전문가 TOP3</h2>
-          <div className="space-y-3">
-            {topExperts.map((expert, index) => (
-              <div
-                key={expert.id}
-                className="flex items-center gap-3 p-3 bg-white rounded-xl"
+        <section className="px-4 pt-7">
+          <div className="flex items-center justify-between">
+            <h2 className="text-[16px] font-semibold text-[#0f0f10]">
+              지금 가장 인기있는 전문가 TOP3
+            </h2>
+          </div>
+          <div className="mt-3 flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            {topTabs.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setSelectedTopTab(tab)}
+                className={`rounded-full px-3 py-1 text-[12px] font-semibold transition-colors ${
+                  selectedTopTab === tab
+                    ? 'bg-[#0f0f10] text-white'
+                    : 'border border-[#e1e2e4] text-[#505158]'
+                }`}
               >
-                {/* 순위 */}
-                <div className="text-base font-bold text-gray-400 min-w-4">
+                {tab}
+              </button>
+            ))}
+          </div>
+          <div className="mt-4 space-y-4">
+            {topExperts.map((expert, index) => (
+              <div key={expert.id} className="flex items-start gap-3">
+                <span className="pt-1 text-[14px] font-semibold text-[#989ba2]">
                   {index + 1}
+                </span>
+                <div className="h-[46px] w-[46px] shrink-0 overflow-hidden rounded-full bg-[#e1e2e4]">
+                  {expert.avatar && (
+                    <img src={expert.avatar} alt="" className="h-full w-full object-cover" />
+                  )}
                 </div>
-
-                {/* 전문가 이미지 */}
-                <div className="w-[60px] h-[60px] bg-gray-200 rounded-full shrink-0" />
-
-                {/* 전문가 정보 */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <h3 className="text-sm font-semibold">{expert.name}</h3>
-                    <span className="text-[10px] text-[#008BFF] bg-[#E5F4FF] px-2 py-1 rounded-[2px]">
+                <div className="flex-1 space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[14px] font-semibold text-[#0f0f10]">
+                      {expert.name}
+                    </span>
+                    <span className="rounded-[2px] bg-[#e5f4ff] px-2 py-0.5 text-[12px] text-[#008bff]">
                       {expert.category}
                     </span>
                   </div>
-                  <p className="text-[13px] text-gray-500 line-clamp-2 leading-relaxed">
-                    김바보님을 위한 솔루션지가 도착했어요. 24시간 내에 전문가님께 질문이 가능하며 시간이 지나면 질문이 불가능해요.
+                  <p className="line-clamp-2 text-[13px] text-[#7a7c82]">
+                    {expert.summary}
                   </p>
                 </div>
-
-                {/* 좋아요 버튼 */}
-                <button className="p-1 hover:bg-gray-50 rounded-full transition-colors shrink-0">
-                  <Heart className="w-5 h-5 text-gray-400" />
+                <button className="rounded-full p-1 text-[#aeb0b6] hover:bg-gray-50">
+                  <Heart className="h-5 w-5" />
                 </button>
               </div>
             ))}
           </div>
         </section>
 
-        {/* 실시간 후기 확인하기 섹션 */}
-        <section className="py-6">
-          <div className="px-4 flex items-center justify-between mb-3">
-            <h2 className="text-base font-bold">실시간 후기 확인하기</h2>
-            <button className="text-xs text-gray-400">
-              전체보기 &gt;
+        <section className="pt-10">
+          <div className="flex items-center justify-between px-4">
+            <h2 className="text-[16px] font-semibold text-[#0f0f10]">실시간 후기 확인하기</h2>
+            <button className="flex items-center gap-1 text-[12px] text-[#989ba2]">
+              전체보기
+              <ChevronRight className="h-4 w-4" />
             </button>
           </div>
-
-          {/* 탭 메뉴 */}
-          <div className="px-4 mb-3">
-            <div className="flex gap-2 overflow-x-auto scrollbar-hide">
-              {reviewTabs.map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setSelectedReviewTab(tab)}
-                  className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors ${
-                    selectedReviewTab === tab
-                      ? 'bg-black text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* <div className="px-4">
-            <div className="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-2">
-              {[1, 2, 3].map((item) => (
-                <div
-                  key={item}
-                  className="min-w-[160px] shrink-0 snap-start"
-                >
-                  <div className="w-[160px] h-[200px] bg-gray-200 rounded-lg mb-2" />
-                  <div className="space-y-0.5">
-                    <div className="flex items-center gap-1">
-                      <span className="text-xs font-semibold truncate">고객 닉네임</span>
-                      <span className="text-yellow-500 text-xs">⭐</span>
-                      <span className="text-xs font-medium">4.7</span>
+          <div className="mt-4 flex gap-3 overflow-x-auto px-4 pb-2 scrollbar-hide snap-x snap-mandatory">
+            {reviews.map((review) => (
+              <article
+                key={review.id}
+                className="flex w-[300px] shrink-0 flex-col gap-4 rounded-[14px] border border-[#f4f4f5] bg-white pb-4 snap-start"
+              >
+                <div className="flex items-center gap-3 px-4 pt-4">
+                  <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full bg-[#e1e2e4]">
+                    {review.avatar && (
+                      <img src={review.avatar} alt="" className="h-full w-full object-cover" />
+                    )}
+                  </div>
+                  <div className="flex flex-1 flex-col gap-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[14px] font-semibold text-[#0f0f10]">
+                        {review.name}
+                      </span>
                     </div>
-                    <p className="text-[11px] text-gray-500 line-clamp-2 leading-tight">
-                      고객이 직접한 후기 써주기 포트폴리오 받기 위해 써놓은 엉뚱한 글들이 여기서 보여요는 건 이명바꿔요?
-                    </p>
-                    <div className="flex gap-1 mt-1.5">
-                      <span className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded">헤어</span>
-                      <span className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded truncate">세부고민 #1</span>
+                    <div className="flex items-center gap-2 text-[13px] text-[#878a93]">
+                      <div className="flex items-center gap-1 text-[#ffb800]">{'★★★★★'}</div>
+                      <span className="text-[#989ba2]">{review.rating}</span>
+                      <span className="text-[#e1e2e4]">|</span>
+                      <span>{review.date}</span>
                     </div>
                   </div>
                 </div>
-              ))}
+                <div className="px-4">
+                  <div className="grid grid-cols-2 gap-2 overflow-hidden rounded-[12px]">
+                    {review.images.map((image, index) => (
+                      <div
+                        key={`${review.id}-image-${index}`}
+                        className="h-[94px] w-full bg-[#e1e2e4]"
+                      >
+                        {image && (
+                          <img src={image} alt="" className="h-full w-full object-cover" />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <p className="px-4 text-[13px] text-[#505158]">{review.content}</p>
+                <div className="flex gap-2 px-4">
+                  <span className="rounded-[2px] bg-[#e5f4ff] px-2 py-0.5 text-[12px] text-[#008bff]">
+                    {review.category}
+                  </span>
+                  <span className="rounded-[2px] bg-[#f4f4f5] px-2 py-0.5 text-[12px] text-[#46474c]">
+                    {review.concern}
+                  </span>
+                </div>
+              </article>
+            ))}
+          </div>
+          <div className="mt-4 flex items-center justify-center">
+            <div className="h-[3px] w-[55px] rounded-full bg-[#e1e2e4]">
+              <div className="h-[3px] w-[20px] rounded-full bg-[#429ff0]" />
             </div>
-          </div> */}
+          </div>
         </section>
       </main>
 
-      {/* 하단 네비게이션 바 */}
-      <nav className="flex-shrink-0 bg-white border-t border-gray-200 px-4 py-3 flex justify-around items-center">
-        <button onClick={() => navigate('/')} className="flex flex-col items-center gap-1 text-gray-600">
-          <div className="w-12 h-12 bg-gray-200 rounded-full" />
-          <span className="text-[10px]">홈</span>
+      <nav className="flex items-center justify-between border-t border-[#f4f4f5] px-4 py-2">
+        <button className="flex flex-1 flex-col items-center gap-1 text-[#0f0f10]">
+          <Home className="h-6 w-6" />
+          <span className="text-[12px] font-semibold">홈</span>
         </button>
-        <button className="flex flex-col items-center gap-1 text-gray-400">
-          <div className="w-12 h-12 bg-gray-200 rounded-full" />
-          <span className="text-[10px]">탐색</span>
+        <button className="flex flex-1 flex-col items-center gap-1 text-[#aeb0b6]">
+          <Compass className="h-6 w-6" />
+          <span className="text-[12px]">탐색</span>
         </button>
-        <button onClick={() => navigate('/chat')} className="flex flex-col items-center gap-1 text-gray-400">
-          <div className="w-12 h-12 bg-gray-200 rounded-full" />
-          <span className="text-[10px]">채팅</span>
+        <button
+          onClick={() => navigate('/chat')}
+          className="flex flex-1 flex-col items-center gap-1 text-[#aeb0b6]"
+        >
+          <MessageCircle className="h-6 w-6" />
+          <span className="text-[12px]">채팅</span>
         </button>
-        <button className="flex flex-col items-center gap-1 text-gray-400">
-          <div className="w-12 h-12 bg-gray-200 rounded-full" />
-          <span className="text-[10px]">커뮤니티</span>
+        <button className="flex flex-1 flex-col items-center gap-1 text-[#aeb0b6]">
+          <Users className="h-6 w-6" />
+          <span className="text-[12px]">커뮤니티</span>
         </button>
-        <button onClick={handleMyPageClick} className="flex flex-col items-center gap-1 text-gray-400">
-          <div className="w-12 h-12 bg-gray-200 rounded-full" />
-          <span className="text-[10px]">마이페이지</span>
+        <button
+          onClick={handleMyPageClick}
+          className="flex flex-1 flex-col items-center gap-1 text-[#aeb0b6]"
+        >
+          <User className="h-6 w-6" />
+          <span className="text-[12px]">마이페이지</span>
         </button>
       </nav>
     </div>
