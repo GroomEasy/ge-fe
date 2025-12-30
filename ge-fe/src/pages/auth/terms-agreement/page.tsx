@@ -89,24 +89,8 @@ export function TermsAgreementPage() {
               type="checkbox"
               checked={isAllChecked}
               onChange={(e) => handleAllCheck(e.target.checked)}
-              className="peer sr-only"
+              className="h-[14px] w-[14px] rounded border-[#c2c4c8]"
             />
-            <span className="relative flex size-[14px] items-center justify-center rounded-[2px] border border-[#c2c4c8] bg-white peer-checked:bg-[#c2c4c8] peer-checked:border-[#c2c4c8] peer-checked:[&>svg]:opacity-100">
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 12 10"
-                className="block h-[10px] w-[12px] opacity-0"
-              >
-                <path
-                  d="M1 5.5L4.5 9L11 1"
-                  fill="none"
-                  stroke="#ffffff"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </span>
             <div className="flex items-center gap-2 text-[14px]">
               <span className="font-semibold text-[#171719]">전체 동의</span>
               <span className="font-normal text-[#70737c]">선택 항목에 대한 동의 포함</span>
@@ -123,24 +107,8 @@ export function TermsAgreementPage() {
                 type="checkbox"
                 checked={agreements.age}
                 onChange={(e) => handleIndividualCheck('age', e.target.checked)}
-                className="peer sr-only"
+                className="h-[14px] w-[14px] rounded border-[#c2c4c8]"
               />
-              <span className="relative flex size-[14px] items-center justify-center rounded-[2px] border border-[#c2c4c8] bg-white peer-checked:bg-[#c2c4c8] peer-checked:border-[#c2c4c8] peer-checked:[&>svg]:opacity-100">
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 12 10"
-                  className="block h-[10px] w-[12px] opacity-0"
-                >
-                  <path
-                    d="M1 5.5L4.5 9L11 1"
-                    fill="none"
-                    stroke="#ffffff"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </span>
               <span className="text-[14px] leading-[1.5] text-[#70737c]">
                 만 14세 이상입니다.<span className="text-[#429ff0]">(필수)</span>
               </span>
@@ -160,24 +128,8 @@ export function TermsAgreementPage() {
                 type="checkbox"
                 checked={agreements.service}
                 onChange={(e) => handleIndividualCheck('service', e.target.checked)}
-                className="peer sr-only"
+                className="h-[14px] w-[14px] rounded border-[#c2c4c8]"
               />
-              <span className="relative flex size-[14px] items-center justify-center rounded-[2px] border border-[#c2c4c8] bg-white peer-checked:bg-[#c2c4c8] peer-checked:border-[#c2c4c8] peer-checked:[&>svg]:opacity-100">
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 12 10"
-                  className="block h-[10px] w-[12px] opacity-0"
-                >
-                  <path
-                    d="M1 5.5L4.5 9L11 1"
-                    fill="none"
-                    stroke="#ffffff"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </span>
               <span className="text-[14px] leading-[1.5] text-[#70737c]">
                 서비스 이용약관 동의<span className="text-[#429ff0]">(필수)</span>
               </span>
@@ -198,24 +150,8 @@ export function TermsAgreementPage() {
                 type="checkbox"
                 checked={agreements.privacy}
                 onChange={(e) => handleIndividualCheck('privacy', e.target.checked)}
-                className="peer sr-only"
+                className="h-[14px] w-[14px] rounded border-[#c2c4c8]"
               />
-              <span className="relative flex size-[14px] items-center justify-center rounded-[2px] border border-[#c2c4c8] bg-white peer-checked:bg-[#c2c4c8] peer-checked:border-[#c2c4c8] peer-checked:[&>svg]:opacity-100">
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 12 10"
-                  className="block h-[10px] w-[12px] opacity-0"
-                >
-                  <path
-                    d="M1 5.5L4.5 9L11 1"
-                    fill="none"
-                    stroke="#ffffff"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </span>
               <span className="text-[14px] leading-[1.5] text-[#70737c]">
                 개인정보 수집 및 이용 동의<span className="text-[#429ff0]">(필수)</span>
               </span>
@@ -236,24 +172,8 @@ export function TermsAgreementPage() {
                 type="checkbox"
                 checked={agreements.marketing}
                 onChange={(e) => handleIndividualCheck('marketing', e.target.checked)}
-                className="peer sr-only"
+                className="h-[14px] w-[14px] rounded border-[#c2c4c8]"
               />
-              <span className="relative flex size-[14px] items-center justify-center rounded-[2px] border border-[#c2c4c8] bg-white peer-checked:bg-[#c2c4c8] peer-checked:border-[#c2c4c8] peer-checked:[&>svg]:opacity-100">
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 12 10"
-                  className="block h-[10px] w-[12px] opacity-0"
-                >
-                  <path
-                    d="M1 5.5L4.5 9L11 1"
-                    fill="none"
-                    stroke="#ffffff"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </span>
               <span className="text-[14px] leading-[1.5] text-[#70737c]">
                 마케팅 목적의 개인정보 수집 및 이용 동의<span className="text-[#70737c]">(선택)</span>
               </span>

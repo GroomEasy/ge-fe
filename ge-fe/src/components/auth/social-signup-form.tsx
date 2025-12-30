@@ -243,24 +243,8 @@ export function SocialSignUpForm() {
             type="checkbox"
             checked={agreed}
             onChange={(e) => setAgreed(e.target.checked)}
-            className="peer sr-only"
+            className="h-[14px] w-[14px] rounded border-[#c2c4c8]"
           />
-          <span className="relative flex size-[14px] items-center justify-center rounded-[2px] border border-[#c2c4c8] bg-white peer-checked:bg-[#c2c4c8] peer-checked:border-[#c2c4c8] peer-checked:[&>svg]:opacity-100">
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 12 10"
-              className="block h-[10px] w-[12px] opacity-0"
-            >
-              <path
-                d="M1 5.5L4.5 9L11 1"
-                fill="none"
-                stroke="#ffffff"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </span>
           <span className="text-[12px] leading-[1.4] text-[#70737c]">
             <button
               type="button"
