@@ -517,6 +517,15 @@ const HomePage = () => {
             ))}
           </div>
         </section>
+
+        <section className="px-4 pb-[24px] pt-[8px]">
+          <button
+            onClick={() => navigate('/reservation/fashion')}
+            className="flex h-[52px] w-full items-center justify-center rounded-[12px] bg-[#171719] text-[16px] font-semibold text-white"
+          >
+            예약
+          </button>
+        </section>
       </main>
 
       <nav className="flex h-[69px] items-center justify-between border-t border-[#f4f4f5] px-4 pb-[12px] pt-[12px]">
@@ -536,7 +545,7 @@ const HomePage = () => {
           <span className="text-[12px]">채팅</span>
         </button>
         <button
-          onClick={() => navigate('/payment/order')}
+          onClick={() => navigate('/reservation/fashion?step=9')}
           className="flex flex-1 flex-col items-center gap-1 text-[#aeb0b6]"
         >
           <img src={communityIcon} alt="커뮤니티" className="h-6 w-6" />

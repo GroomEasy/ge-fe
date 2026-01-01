@@ -548,7 +548,7 @@ const CategoryLandingPage = () => {
           <span className="text-[12px]">채팅</span>
         </button>
         <button
-          onClick={() => navigate('/payment/order')}
+          onClick={() => navigate('/reservation/fashion?step=9')}
           className="flex flex-1 flex-col items-center gap-1 text-[#aeb0b6]"
         >
           <img src={communityIcon} alt="커뮤니티" className="h-6 w-6" />
