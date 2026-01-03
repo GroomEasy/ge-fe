@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useMemo, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ChevronRight, Search } from 'lucide-react';
-import { useAuthStore } from '../../stores/useAuthStore';
 import heartIcon from '../../images/mypage/heart.svg';
 import homeIcon from '../../images/home/home.svg';
 import exploreIcon from '../../images/home/search.svg';
@@ -10,29 +9,11 @@ import communityIcon from '../../images/home/community.svg';
 import mypageIcon from '../../images/home/mypage.svg';
 import starIcon from '../../images/reviews/star.svg';
 
-type Banner = {
-  id: number;
-  eyebrow?: string;
-  title: string;
-  subtitle?: string;
-  author?: string;
-  role?: string;
-  image?: string;
-};
-
 type TabItem = {
   id: string;
   label: string;
   route?: string;
   underlineLeft: number;
-};
-
-type TopExpert = {
-  id: number;
-  name: string;
-  summary: string;
-  tags: string[];
-  thumbnail?: string;
 };
 
 type ReviewCard = {
@@ -59,18 +40,43 @@ type ExpertListCard = {
   images: string[];
 };
 
-const HomePage = () => {
+type StyleCard = {
+  id: number;
+  title: string;
+  description: string;
+  badge: string;
+  image?: string;
+};
+
+type ImmediateCard = {
+  id: number;
+  title: string;
+  subtitle: string;
+  expert: string;
+  rating: number;
+  reviewCount: string;
+  times: string[];
+  image?: string;
+  avatar?: string;
+};
+
+const CategoryLandingPage = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, initializeAuth } = useAuthStore();
-  const [selectedTopTab, setSelectedTopTab] = useState('전체');
-  const [selectedConsultingTab, setSelectedConsultingTab] = useState('전체');
-  const [selectedHomeTab, setSelectedHomeTab] = useState('전체');
+  const params = useParams();
+  const categoryKey = params.category ?? 'hair';
+  const [selectedStyleFilter, setSelectedStyleFilter] = useState('전체');
 
-  useEffect(() => {
-    initializeAuth();
-  }, [initializeAuth]);
+  const categoryLabel = useMemo(() => {
+    const map: Record<string, string> = {
+      hair: '헤어',
+      fashion: '패션',
+      makeup: '메이크업',
+      skin: '스킨',
+    };
+    return map[categoryKey] ?? '헤어';
+  }, [categoryKey]);
 
-  const homeTabs: TabItem[] = useMemo(
+  const categoryTabs: TabItem[] = useMemo(
     () => [
       { id: 'all', label: '전체', route: '/', underlineLeft: 16 },
       { id: 'hair', label: '헤어', route: '/category/hair', underlineLeft: 85 },
@@ -81,63 +87,38 @@ const HomePage = () => {
     [],
   );
 
-  const banners: Banner[] = [
+  const quickTopics = [
+    { label: '펌으로 이미지 변신' },
+    { label: '탈모 콤플렉스' },
+    { label: '헤어라인 정리' },
+    { label: '데일리 헤어 손질법' },
+  ];
+
+  const styleFilters = ['전체', '컷', '펌', '염색', '클리닉', '스타일링', '탈모'];
+
+  const styleCards: StyleCard[] = [
     {
       id: 1,
-      title: '3분 투자로 완성하는',
-      subtitle: '관리하는 남자의 인상',
+      badge: '인기 1위',
+      title: '스핀 스왈로브 펌',
+      description: '과하지 않고 자연스러운 펌으로 이목구비를 강조하는 가벼운 곡선형 펌',
     },
     {
       id: 2,
-      eyebrow: '이제 슬슬 준비해야지',
-      title: '소개팅 필수 헤어스타일',
-      subtitle: '‘스핀 스왈로브펌’',
-      author: '박서령',
-      role: '헤어디자이너',
-    },
-    {
-      id: 3,
-      title: '박철옹이 알려주는',
-      subtitle: '진짜 남자의 메이크업',
-    },
-  ];
-
-  const topTabs = [
-    { label: '전체', minWidth: 47 },
-    { label: '헤어', minWidth: 47 },
-    { label: '메이크업', minWidth: 69 },
-    { label: '스킨', minWidth: 47 },
-  ];
-
-  const topExperts: TopExpert[] = [
-    {
-      id: 1,
-      name: '강현우',
-      summary: '전문가가 작성한 자신만의 강점 1줄을 이렇게 적어두기!!',
-      tags: ['헤어라인', '두상분석'],
-    },
-    {
-      id: 2,
-      name: '강현우',
-      summary: '전문가가 작성한 자신만의 강점 1줄을 이렇게 적어두기!!',
-      tags: ['헤어라인', '두상분석'],
-    },
-    {
-      id: 3,
-      name: '강현우',
-      summary: '전문가가 작성한 자신만의 강점 1줄을 이렇게 적어두기!!',
-      tags: ['헤어라인', '두상분석'],
+      badge: '인기 1위',
+      title: '스핀 스왈로브 펌',
+      description: '과하지 않고 자연스러운 펌으로 이목구비를 강조하는 펌',
     },
   ];
 
   const reviews: ReviewCard[] = [
     {
       id: 1,
-      name: '성정수 전문가',
+      name: '옹민호 전문가',
       rating: 4.7,
       date: '2025.10.08',
       content:
-        '머리가 악성곱슬이어서 너무 고민이었는데 성정수 전문가님 만나고 광명 찾았어요~!!! 원래는 2주만 지나도 바로 곱슬곱슬해지는데 지금 한 달이 지나도 직모에요.',
+        '머리가 악성곱슬이어서 너무 고민이었는데 옹민호 전문가님 만나고 광명 찾았어요~!!! 원래는 2주만 지나도 바로 곱슬곱슬해지는데 지금 한 달이 지나도 직모에요.',
       category: '헤어',
       concern: '탈모',
       images: ['', ''],
@@ -155,11 +136,25 @@ const HomePage = () => {
     },
   ];
 
-  const consultingTabs = [
-    { label: '전체', minWidth: 47 },
-    { label: '헤어', minWidth: 47 },
-    { label: '메이크업', minWidth: 69 },
-    { label: '패션', minWidth: 47 },
+  const immediateCards: ImmediateCard[] = [
+    {
+      id: 1,
+      title: '소개팅 필승 펌',
+      subtitle: '“여심을 흔들만한 스핀 스왈로브펌”',
+      expert: '성정수 상담사',
+      rating: 4.7,
+      reviewCount: '(1,130)',
+      times: ['오전 11:00', '오후 12:30', '오후 1:00'],
+    },
+    {
+      id: 2,
+      title: '여심 저격 컷',
+      subtitle: '“콧대가 높아보이는 가일컷”',
+      expert: '성정수 상담사',
+      rating: 4.7,
+      reviewCount: '(1,130)',
+      times: ['오전 11:00', '오후 12:30', '오후 1:00'],
+    },
   ];
 
   const expertCards: ExpertListCard[] = [
@@ -195,18 +190,12 @@ const HomePage = () => {
     },
   ];
 
-  const handleMyPageClick = () => {
-    if (isAuthenticated) {
-      navigate('/profile');
-    } else {
-      navigate('/auth/login');
-    }
-  };
+  const underlineLeft = categoryTabs.find((tab) => tab.label === categoryLabel)?.underlineLeft ?? 85;
 
   return (
     <div className="flex h-full flex-col bg-white">
       <header className="flex h-[56px] items-center justify-between px-4 pt-[14px]">
-        <div className="flex items-center gap-1 text-[18px] font-semibold tracking-tight text-[#0f0f10]">
+        <div className="flex items-center gap-1 text-[18px] font-semibold text-[#0f0f10]">
           <span>MENUAL</span>
           <span>.</span>
         </div>
@@ -223,17 +212,12 @@ const HomePage = () => {
       <main className="flex-1 overflow-y-auto pb-6 scrollbar-hide">
         <section className="pt-[4px]">
           <div className="flex items-center justify-between px-4 text-[16px] font-semibold">
-            {homeTabs.map((tab) => (
+            {categoryTabs.map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => {
-                  setSelectedHomeTab(tab.label);
-                  if (tab.route && tab.route !== '/') {
-                    navigate(tab.route);
-                  }
-                }}
+                onClick={() => tab.route && navigate(tab.route)}
                 className={
-                  tab.label === selectedHomeTab
+                  tab.label === categoryLabel
                     ? 'text-[#0f0f10]'
                     : 'text-[#989ba2]'
                 }
@@ -243,125 +227,104 @@ const HomePage = () => {
             ))}
           </div>
           <div className="relative mt-[12px] h-px bg-[#e1e2e4]">
-            <span
-              className="absolute top-0 h-px w-[41px] bg-[#0f0f10]"
-              style={{ left: homeTabs.find((tab) => tab.label === selectedHomeTab)?.underlineLeft }}
-            />
+            <span className="absolute top-0 h-px w-[41px] bg-[#0f0f10]" style={{ left: underlineLeft }} />
           </div>
         </section>
 
-        <section className="px-4 pt-5">
-          <div className="flex gap-[4px] overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory">
-            {banners.map((banner) => (
-              <article
-                key={banner.id}
-                className="relative h-[340px] w-[340px] shrink-0 overflow-hidden rounded-[12px] bg-[#c7c9cf] snap-start"
-              >
-                {banner.image && (
-                  <img
-                    src={banner.image}
-                    alt=""
-                    className="absolute inset-0 h-full w-full object-cover"
-                  />
-                )}
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    background:
-                      'linear-gradient(180deg, rgba(111,111,111,0) 52.404%, rgba(89,89,89,0.9) 100%)',
-                  }}
-                />
-                <div className="absolute left-6 top-[220px] w-[292px] text-white">
-                  {banner.eyebrow && (
-                    <p className="text-[12px] leading-[1.4]">{banner.eyebrow}</p>
-                  )}
-                  <p className="text-[25.5px] font-semibold leading-[1.5]">
-                    {banner.title}
-                  </p>
-                  {banner.subtitle && (
-                    <p className="text-[25.5px] font-semibold leading-[1.5]">
-                      {banner.subtitle}
-                    </p>
-                  )}
-                  {banner.author && banner.role && (
-                    <div className="mt-3 inline-flex h-[22px] items-center gap-[6px] rounded-[2px] bg-[#008bff] px-[8px] text-[12px] font-semibold">
-                      <span>{banner.author}</span>
-                      <span className="h-[7px] w-px bg-white/80" />
-                      <span className="text-[10px] font-medium">{banner.role}</span>
-                    </div>
-                  )}
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="pt-[41px]">
-          <div className="px-4">
-            <h2 className="text-[18px] font-semibold text-[#0f0f10]">
-              지금 가장 인기있는 전문가 TOP3
-            </h2>
-            <div className="mt-[16px] flex gap-[8px] overflow-x-auto pb-2 scrollbar-hide">
-              {topTabs.map((tab) => (
-                <button
-                  key={tab.label}
-                  onClick={() => setSelectedTopTab(tab.label)}
-                  className={`flex h-[30px] items-center justify-center whitespace-nowrap rounded-[4px] px-[12px] text-[13px] ${
-                    selectedTopTab === tab.label
-                      ? 'bg-[#46474c] text-white font-semibold'
-                      : 'border border-[#dbdcdf] text-[#46474c] font-normal'
-                  }`}
-                  style={{ minWidth: tab.minWidth }}
-                >
-                  {tab.label}
-                </button>
-              ))}
+        <section className="relative mt-[20px] h-[246px] w-full overflow-hidden">
+          <div className="absolute left-[-25px] top-[-8px] h-[262px] w-[400px] rounded-[12px] bg-[#d2d4d8]" />
+          <div className="absolute bottom-0 left-[-20px] h-[144.5px] w-[416px] bg-gradient-to-b from-transparent to-black/50" />
+          <div className="absolute left-[19.5px] top-[125px] w-[165px] text-white">
+            <p className="text-[12px] leading-[1.4]">이제 슬슬 준비해야지</p>
+            <p className="mt-1 text-[18px] font-semibold leading-[1.35]">
+              소개팅 필수 헤어스타일
+              <br />‘스핀 스왈로브펌’
+            </p>
+            <div className="mt-3 inline-flex h-[22px] items-center gap-[4px] bg-[#008bff] px-[8px] text-[12px] font-semibold">
+              <span>박서령</span>
+              <span className="h-[7px] w-px bg-white/80" />
+              <span className="text-[10px] font-medium">헤어디자이너</span>
             </div>
           </div>
-          <div className="mt-4 space-y-4 px-4">
-            {topExperts.map((expert, index) => (
-              <div key={expert.id} className="flex h-[72px] w-[342px] items-start justify-between">
-                <div className="flex items-end gap-[12px]">
-                  <div className="relative h-[72px] w-[72px] shrink-0 overflow-hidden rounded-[4px] bg-[#e1e2e4]">
-                    {expert.thumbnail && (
-                      <img src={expert.thumbnail} alt="" className="h-full w-full object-cover" />
-                    )}
-                    <div className="absolute left-[4px] top-[4px] flex h-[15px] w-[15px] items-center justify-center bg-[#008bff]">
-                      <span className="text-[12px] font-medium leading-[1.4] text-white">
-                        {index + 1}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex w-[218px] flex-col items-start gap-[10px]">
-                    <p className="h-[40px] w-[218px] text-[14px] font-semibold leading-[1.4] text-[#292a2d]">
-                      {expert.name} |{' '}
-                      <span className="font-normal">{expert.summary}</span>
-                    </p>
-                    <div className="flex items-center gap-[4px]">
-                      {expert.tags.map((tag) => (
-                        <span
-                          key={`${expert.id}-${tag}`}
-                          className="flex h-[21px] items-center justify-center rounded-[2px] bg-[#f4f4f5] px-[6px] py-[4px] text-[12px] text-[#46474c]"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                <button className="flex h-6 w-6 items-center justify-center">
-                  <img src={heartIcon} alt="찜" className="h-6 w-6" />
-                </button>
+          <div className="absolute right-[15px] top-[205px] flex h-[20px] w-[36px] items-center justify-center rounded-[37px] bg-black/50 text-[12px] text-white">
+            1/12
+          </div>
+        </section>
+
+        <section className="mt-[16px] px-4">
+          <div className="flex gap-[6px] overflow-x-auto pb-[2px] scrollbar-hide">
+            {quickTopics.map((topic) => (
+              <div
+                key={topic.label}
+                className="flex h-[44px] shrink-0 items-center gap-[10px] rounded-[4px] bg-white p-[10px] shadow-[0px_4px_20px_0px_rgba(0,0,0,0.2)]"
+              >
+                <div className="h-[24px] w-[24px] bg-[#d9d9d9]" />
+                <span className="text-[13px] font-semibold text-[#292a2d]">
+                  {topic.label}
+                </span>
               </div>
             ))}
           </div>
         </section>
 
-        <section className="mt-[41px] bg-[#f4f8fb]">
+        <section className="px-4 pt-[32px]">
+          <div className="flex items-center justify-between">
+            <h2 className="text-[18px] font-semibold text-[#0f0f10]">
+              전문가들이 많이 추천하는 스타일
+            </h2>
+            <button className="flex items-center gap-[2px] text-[14px] text-[#70737c]">
+              전체보기
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="mt-[12px] flex gap-[8px] overflow-x-auto pb-2 scrollbar-hide">
+            {styleFilters.map((filter) => (
+              <button
+                key={filter}
+                onClick={() => setSelectedStyleFilter(filter)}
+                className={`flex h-[30px] shrink-0 items-center justify-center whitespace-nowrap rounded-[4px] px-[12px] py-[6px] text-[13px] leading-[1.4] ${
+                  selectedStyleFilter === filter
+                    ? 'bg-[#46474c] text-white font-semibold'
+                    : 'border border-[#dbdcdf] bg-white text-[#46474c] font-normal'
+                }`}
+              >
+                {filter}
+              </button>
+            ))}
+          </div>
+          <div className="mt-[16px] flex gap-[16px] overflow-x-auto pb-2 scrollbar-hide">
+            {styleCards.map((card) => (
+              <article
+                key={card.id}
+                className="relative h-[240px] w-[267px] shrink-0 overflow-hidden rounded-[8px] bg-white shadow-[0px_2px_12px_0px_rgba(0,0,0,0.13)]"
+              >
+                <div className="h-[142px] w-full overflow-hidden bg-[#d2d4d8]">
+                  {card.image && (
+                    <img src={card.image} alt="" className="h-full w-full object-cover" />
+                  )}
+                </div>
+                <div className="absolute left-[10px] top-[155px] flex items-center gap-[8px]">
+                  <span className="inline-flex items-center rounded-[2px] bg-[#e5f4ff] px-[8px] py-[4px] text-[12px] text-[#008bff]">
+                    {card.badge}
+                  </span>
+                  <p className="text-[14px] font-semibold text-black">{card.title}</p>
+                </div>
+                <p className="absolute left-[15px] top-[187px] w-[201px] text-[12px] font-medium leading-[1.4] text-[#656870]">
+                  {card.description}
+                </p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="mt-[32px] bg-[#f4f8fb]">
           <div className="px-4 pt-[22px]">
             <div className="flex items-center justify-between">
-              <h2 className="text-[18px] font-semibold text-[#0f0f10]">전체 후기</h2>
-              <button className="flex items-center gap-[2px] text-[14px] text-[#70737c]">
+              <h2 className="text-[18px] font-semibold text-[#0f0f10]">실시간 후기 확인하기</h2>
+              <button
+                onClick={() => navigate(`/category/${categoryKey}/reviews`)}
+                className="flex items-center gap-[2px] text-[14px] text-[#70737c]"
+              >
                 전체보기
                 <ChevronRight className="h-4 w-4" />
               </button>
@@ -437,24 +400,70 @@ const HomePage = () => {
         </section>
 
         <section className="px-4 pt-[32px]">
-          <h2 className="text-[18px] font-semibold text-[#0f0f10]">필승 소개팅 컨설팅</h2>
-          <div className="mt-[12px] flex gap-[8px] overflow-x-auto pb-2 scrollbar-hide">
-            {consultingTabs.map((tab) => (
-              <button
-                key={tab.label}
-                onClick={() => setSelectedConsultingTab(tab.label)}
-                className={`flex h-[30px] items-center justify-center whitespace-nowrap rounded-[4px] px-[12px] text-[13px] ${
-                  selectedConsultingTab === tab.label
-                    ? 'bg-[#46474c] text-white font-semibold'
-                    : 'border border-[#dbdcdf] text-[#46474c] font-normal'
-                }`}
-                style={{ minWidth: tab.minWidth }}
+          <div className="flex items-center justify-between">
+            <h2 className="text-[18px] font-semibold text-[#0f0f10]">즉시 상담이 가능한 전문가</h2>
+            <button className="flex items-center gap-[2px] text-[14px] text-[#70737c]">
+              전체보기
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="mt-[16px] flex gap-[12px] overflow-x-auto pb-2 scrollbar-hide">
+            {immediateCards.map((card) => (
+              <article
+                key={card.id}
+                className="relative h-[288px] w-[301px] shrink-0 rounded-[8px] bg-white shadow-[0px_2px_12px_0px_rgba(0,0,0,0.13)]"
               >
-                {tab.label}
-              </button>
+                <div className="relative h-[170px] w-full overflow-hidden rounded-t-[8px] bg-[#d2d4d8]">
+                  {card.image && (
+                    <img src={card.image} alt="" className="h-full w-full object-cover" />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/40" />
+                  <p className="absolute bottom-[30px] left-[13px] text-[12px] text-white">
+                    {card.subtitle}
+                  </p>
+                  <p className="absolute bottom-[50px] left-[13px] text-[14px] font-semibold text-white">
+                    {card.title}
+                  </p>
+                </div>
+                <div className="absolute left-[12px] top-[183px] flex items-center gap-[10px]">
+                  <div className="h-[36px] w-[36px] rounded-full bg-[#e1e2e4]">
+                    {card.avatar && (
+                      <img src={card.avatar} alt="" className="h-full w-full object-cover" />
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-[14px] font-semibold text-[#0f0f10]">{card.expert}</p>
+                    <div className="mt-[4px] flex items-center gap-[4px] text-[13px] text-[#878a93]">
+                      <img src={starIcon} alt="" className="h-[18px] w-[18px]" />
+                      <span className="font-semibold text-[#505158]">{card.rating}</span>
+                      <span>{card.reviewCount}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="absolute left-[12px] top-[238px] flex gap-[6px]">
+                  {card.times.map((time) => (
+                    <span
+                      key={`${card.id}-${time}`}
+                      className="flex h-[36px] w-[88px] items-center justify-center rounded-[6px] bg-[#008bff] text-[13px] text-white"
+                    >
+                      {time}
+                    </span>
+                  ))}
+                </div>
+              </article>
             ))}
           </div>
-          <div className="mt-[20px] space-y-[16px] pb-[16px]">
+        </section>
+
+        <section className="px-4 pt-[32px]">
+          <div className="flex items-center justify-between">
+            <h2 className="text-[18px] font-semibold text-[#0f0f10]">헤어 전문가</h2>
+            <button className="flex items-center gap-[2px] text-[14px] text-[#70737c]">
+              전체보기
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="mt-[16px] space-y-[16px]">
             {expertCards.map((expert) => (
               <article
                 key={expert.id}
@@ -517,25 +526,19 @@ const HomePage = () => {
             ))}
           </div>
         </section>
-
-        <section className="px-4 pb-[24px] pt-[8px]">
-          <button
-            onClick={() => navigate('/reservation/fashion')}
-            className="flex h-[52px] w-full items-center justify-center rounded-[12px] bg-[#171719] text-[16px] font-semibold text-white"
-          >
-            예약
-          </button>
-        </section>
       </main>
 
       <nav className="flex h-[69px] items-center justify-between border-t border-[#f4f4f5] px-4 pb-[12px] pt-[12px]">
-        <button className="flex flex-1 flex-col items-center gap-1 text-[#0f0f10]">
+        <button
+          onClick={() => navigate('/')}
+          className="flex flex-1 flex-col items-center gap-1 text-[#aeb0b6]"
+        >
           <img src={homeIcon} alt="홈" className="h-6 w-6" />
-          <span className="text-[12px] font-semibold">홈</span>
+          <span className="text-[12px]">홈</span>
         </button>
-        <button className="flex flex-1 flex-col items-center gap-1 text-[#aeb0b6]">
+        <button className="flex flex-1 flex-col items-center gap-1 text-[#0f0f10]">
           <img src={exploreIcon} alt="탐색" className="h-6 w-6" />
-          <span className="text-[12px]">탐색</span>
+          <span className="text-[12px] font-semibold">탐색</span>
         </button>
         <button
           onClick={() => navigate('/chat')}
@@ -551,10 +554,7 @@ const HomePage = () => {
           <img src={communityIcon} alt="커뮤니티" className="h-6 w-6" />
           <span className="text-[12px]">커뮤니티</span>
         </button>
-        <button
-          onClick={handleMyPageClick}
-          className="flex flex-1 flex-col items-center gap-1 text-[#aeb0b6]"
-        >
+        <button className="flex flex-1 flex-col items-center gap-1 text-[#aeb0b6]">
           <img src={mypageIcon} alt="마이페이지" className="h-6 w-6" />
           <span className="text-[12px]">마이페이지</span>
         </button>
@@ -563,4 +563,4 @@ const HomePage = () => {
   );
 };
 
-export default HomePage;
+export default CategoryLandingPage;
