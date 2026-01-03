@@ -15,6 +15,10 @@ import { ChatRoom } from "@/pages/chat/components/ChatRoom";
 import EditorPage from "@/pages/solution/writeSolution";
 import MyPage from "@/pages/myPage/page";
 import ReservationHistoryView from "@/pages/myPage/reservation/page";
+import LikedListPage from "@/pages/myPage/likedList/page1";
+import PointPage from "@/pages/myPage/point/page";
+import WriteReviewPage from "@/pages/myPage/review/writeReview";
+import ConsultationSheetTestPage from "@/pages/resevationFlow/page";
 // import { ProfileWritingListPage } from '../pages/profile/writing-list';
 // import { ProfileDetailPage } from '../pages/profile/detail';
 // import { ProfileWritePage } from '../pages/profile/write';
@@ -85,6 +89,22 @@ export const router = createBrowserRouter([
   {
     path: "/reservationhistory",
     element: <ReservationHistoryView />,
+  },
+  {
+    path: "/LikedList",
+    element: <LikedListPage />,
+  },
+  {
+    path: "/PointPage",
+    element: <PointPage />,
+  },
+  {
+    path: "/WriteReview",
+    element: <WriteReviewPage />,
+  },
+  {
+    path: "/sheetTest",
+    element: <ConsultationSheetTestPage />,
   },
   // {
   //   path: '/profile/writing-list',
