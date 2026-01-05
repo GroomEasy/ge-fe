@@ -29,11 +29,6 @@ import { PaymentCompletePage } from "@/pages/payment/complete/page";
 import FashionReservationFlowPage from "@/pages/reservation/fashion/page";
 import { HairSetup } from "@/pages/hairFlow/page";
 
-// import { ProfileWritingListPage } from '../pages/profile/writing-list';
-// import { ProfileDetailPage } from '../pages/profile/detail';
-// import { ProfileWritePage } from '../pages/profile/write';
-// import { ProfileEvaluationPage } from '../pages/profile/evaluation';
-
 export const router = createBrowserRouter([
   {
     path: "/",
