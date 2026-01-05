@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import backIcon from '../../../images/login/back.svg';
 
 const StepArrow = () => (
@@ -38,12 +38,24 @@ const OrderChevron = ({ expanded }: { expanded: boolean }) => (
 
 export function PaymentCompletePage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const backTarget = (location.state as { from?: string } | null)?.from;
   const [isExpanded, setIsExpanded] = useState(false);
+  const totalPrice = 24000;
+  const formatCurrency = (value: number) => `${value.toLocaleString('ko-KR')}원`;
+
+  const handleBack = () => {
+    if (backTarget) {
+      navigate(backTarget);
+      return;
+    }
+    navigate('/payment/order');
+  };
 
   return (
     <div className="min-h-screen bg-white text-[#0f0f10]">
       <header className="flex items-center gap-[15px] px-4 pt-[53px]">
-        <button onClick={() => navigate('/')} className="h-6 w-6">
+        <button onClick={handleBack} className="h-6 w-6">
           <img src={backIcon} alt="뒤로가기" className="h-6 w-6" />
         </button>
         <h1 className="text-[20px] font-semibold leading-[1.4]">주문하기</h1>
@@ -86,7 +98,7 @@ export function PaymentCompletePage() {
       <div className="px-4 pt-[50px]">
         <div className="flex items-center gap-[28px] text-[16px] font-semibold leading-[1.4]">
           <span>결제 금액</span>
-          <span>00,000원</span>
+          <span>{formatCurrency(totalPrice)}</span>
         </div>
         <div className="mt-[18px] h-px w-full bg-[#e1e2e4]" />
         <div className="mt-[16px] flex items-center gap-[28px] text-[16px] leading-[1.4]">

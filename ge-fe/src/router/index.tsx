@@ -132,20 +132,4 @@ export const router = createBrowserRouter([
     path: "/reservation/fashion",
     element: <FashionReservationFlowPage />,
   },
-  // {
-  //   path: '/profile/writing-list',
-  //   element: <ProfileWritingListPage />,
-  // },
-  // {
-  //   path: '/profile/detail/:id',
-  //   element: <ProfileDetailPage />,
-  // },
-  // {
-  //   path: '/profile/write/:id',
-  //   element: <ProfileWritePage />,
-  // },
-  // {
-  //   path: '/profile/evaluation/:id',
-  //   element: <ProfileEvaluationPage />,
-  // },
 ]);

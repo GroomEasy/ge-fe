@@ -1,13 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type KeyboardEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight, Search } from 'lucide-react';
 import { useAuthStore } from '../../stores/useAuthStore';
 import heartIcon from '../../images/mypage/heart.svg';
-import homeIcon from '../../images/home/home.svg';
-import exploreIcon from '../../images/home/search.svg';
-import chatIcon from '../../images/home/chat.svg';
-import communityIcon from '../../images/home/community.svg';
-import mypageIcon from '../../images/home/mypage.svg';
+import BottomNav from '@/components/navigation/bottom-nav';
+import Logo from '@/components/ui/logo';
 import starIcon from '../../images/reviews/star.svg';
 import { expertService } from '../../services/expert.service';
 import { reviewService } from '../../services/review.service';
@@ -67,7 +64,7 @@ type ExpertListCard = {
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, initializeAuth } = useAuthStore();
+  const { initializeAuth } = useAuthStore();
   const [selectedTopTab, setSelectedTopTab] = useState('전체');
   const [selectedConsultingTab, setSelectedConsultingTab] = useState('전체');
   const [selectedHomeTab, setSelectedHomeTab] = useState('전체');
@@ -195,20 +192,33 @@ const HomePage = () => {
     },
   ];
 
-  const handleMyPageClick = () => {
-    if (isAuthenticated) {
-      navigate('/profile');
-    } else {
-      navigate('/auth/login');
-    }
-  };
-
   const handleReservationSchedule = () => {
     navigate('/sheetTest');
   };
 
   const handleExpertProfile = (expertId: number) => {
     navigate(`/experts/${expertId}`);
+  };
+
+  const getReviewRoute = () => {
+    if (selectedHomeTab === '전체') {
+      return '/category/hair/reviews';
+    }
+    const tab = homeTabs.find((item) => item.label === selectedHomeTab);
+    if (tab?.route) {
+      return `${tab.route}/reviews`;
+    }
+    return '/category/hair/reviews';
+  };
+
+  const handleExpertKeyDown = (
+    event: KeyboardEvent<HTMLDivElement>,
+    expertId: number,
+  ) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleExpertProfile(expertId);
+    }
   };
 
   useEffect(() => {
@@ -280,12 +290,9 @@ const HomePage = () => {
 
   return (
     <div className="flex h-full flex-col bg-white">
-      <header className="flex h-[56px] items-center justify-between px-4 pt-[14px]">
-        <div className="flex items-center gap-1 text-[18px] font-semibold tracking-tight text-[#0f0f10]">
-          <span>MENUAL</span>
-          <span>.</span>
-        </div>
-        <div className="flex items-center gap-[14px]">
+      <header className="flex h-[56px] items-center justify-between px-4">
+        <Logo />
+        <div className="flex items-center gap-4">
           <button className="flex h-6 w-6 items-center justify-center">
             <Search className="h-6 w-6 text-[#0f0f10]" />
           </button>
@@ -395,7 +402,14 @@ const HomePage = () => {
           </div>
           <div className="mt-4 space-y-4 px-4">
             {topExperts.map((expert, index) => (
-              <div key={expert.id} className="flex h-[72px] w-[342px] items-start justify-between">
+              <div
+                key={expert.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => handleExpertProfile(expert.id)}
+                onKeyDown={(event) => handleExpertKeyDown(event, expert.id)}
+                className="flex h-[72px] w-[342px] items-start justify-between cursor-pointer"
+              >
                 <div className="flex items-end gap-[12px]">
                   <div className="relative h-[72px] w-[72px] shrink-0 overflow-hidden rounded-[4px] bg-[#e1e2e4]">
                     {expert.thumbnail && (
@@ -407,11 +421,7 @@ const HomePage = () => {
                       </span>
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => handleExpertProfile(expert.id)}
-                    className="flex w-[218px] flex-col items-start gap-[10px] text-left"
-                  >
+                  <div className="flex w-[218px] flex-col items-start gap-[10px] text-left">
                     <p className="h-[40px] w-[218px] text-[14px] font-semibold leading-[1.4] text-[#292a2d] line-clamp-2">
                       {expert.name} |{' '}
                       <span className="font-normal">{expert.summary}</span>
@@ -426,9 +436,12 @@ const HomePage = () => {
                         </span>
                       ))}
                     </div>
-                  </button>
+                  </div>
                 </div>
-                <button className="flex h-6 w-6 items-center justify-center">
+                <button
+                  onClick={(event) => event.stopPropagation()}
+                  className="flex h-6 w-6 items-center justify-center"
+                >
                   <img src={heartIcon} alt="찜" className="h-6 w-6" />
                 </button>
               </div>
@@ -440,7 +453,10 @@ const HomePage = () => {
           <div className="px-4 pt-[22px]">
             <div className="flex items-center justify-between">
               <h2 className="text-[18px] font-semibold text-[#0f0f10]">전체 후기</h2>
-              <button className="flex items-center gap-[2px] text-[14px] text-[#70737c]">
+              <button
+                onClick={() => navigate(getReviewRoute())}
+                className="flex items-center gap-[2px] text-[14px] text-[#70737c]"
+              >
                 전체보기
                 <ChevronRight className="h-4 w-4" />
               </button>
@@ -537,13 +553,13 @@ const HomePage = () => {
             {expertCards.map((expert) => (
               <article
                 key={expert.id}
-                className="relative h-[253px] w-[343px] rounded-[8px] bg-white shadow-[0px_2px_12px_0px_rgba(0,0,0,0.13)]"
+                role="button"
+                tabIndex={0}
+                onClick={() => handleExpertProfile(expert.id)}
+                onKeyDown={(event) => handleExpertKeyDown(event, expert.id)}
+                className="relative h-[253px] w-[343px] rounded-[8px] bg-white shadow-[0px_2px_12px_0px_rgba(0,0,0,0.13)] cursor-pointer"
               >
-                <button
-                  type="button"
-                  onClick={() => handleExpertProfile(expert.id)}
-                  className="absolute left-[13px] top-[23px] flex items-center gap-[10px] text-left"
-                >
+                <div className="absolute left-[13px] top-[23px] flex items-center gap-[10px] text-left">
                   <div className="h-[42px] w-[42px] shrink-0 rounded-full bg-[#e1e2e4]">
                     {expert.avatar && (
                       <img src={expert.avatar} alt="" className="h-full w-full object-cover" />
@@ -555,7 +571,7 @@ const HomePage = () => {
                     </p>
                     <p className="mt-[6px] text-[13px] text-[#878a93]">{expert.summary}</p>
                   </div>
-                </button>
+                </div>
                 <div className="absolute right-[13px] top-[23px] flex items-center gap-[6px] text-[13px] text-[#878a93]">
                   <div className="flex items-center gap-[2px]">
                     <img src={starIcon} alt="" className="h-[18px] w-[18px]" />
@@ -563,7 +579,10 @@ const HomePage = () => {
                   </div>
                   <span>{expert.reviewCount}</span>
                 </div>
-                <div className="absolute left-[12px] top-[79px] flex gap-[2px]">
+                <div
+                  className="absolute left-[12px] top-[79px] flex gap-[2px]"
+                  onClick={() => handleExpertProfile(expert.id)}
+                >
                   {expert.images.map((image, index) => (
                     <div
                       key={`${expert.id}-review-${index}`}
@@ -581,7 +600,10 @@ const HomePage = () => {
                 </div>
                 <button
                   className="absolute right-[12px] top-[198px] h-[36px] w-[95px] rounded-[4px] bg-[#171719] text-[14px] font-medium text-white"
-                  onClick={handleReservationSchedule}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    handleReservationSchedule();
+                  }}
                 >
                   상담 예약
                 </button>
@@ -611,34 +633,7 @@ const HomePage = () => {
         </section>
       </main>
 
-      <nav className="flex h-[69px] items-center justify-between border-t border-[#f4f4f5] px-4 pb-[12px] pt-[12px]">
-        <button className="flex flex-1 flex-col items-center gap-1 text-[#0f0f10]">
-          <img src={homeIcon} alt="홈" className="h-6 w-6" />
-          <span className="text-[12px] font-semibold">홈</span>
-        </button>
-        <button className="flex flex-1 flex-col items-center gap-1 text-[#aeb0b6]">
-          <img src={exploreIcon} alt="탐색" className="h-6 w-6" />
-          <span className="text-[12px]">탐색</span>
-        </button>
-        <button
-          onClick={() => navigate('/chat')}
-          className="flex flex-1 flex-col items-center gap-1 text-[#aeb0b6]"
-        >
-          <img src={chatIcon} alt="채팅" className="h-6 w-6" />
-          <span className="text-[12px]">채팅</span>
-        </button>
-        <button className="flex flex-1 flex-col items-center gap-1 text-[#aeb0b6]">
-          <img src={communityIcon} alt="커뮤니티" className="h-6 w-6" />
-          <span className="text-[12px]">커뮤니티</span>
-        </button>
-        <button
-          onClick={handleMyPageClick}
-          className="flex flex-1 flex-col items-center gap-1 text-[#aeb0b6]"
-        >
-          <img src={mypageIcon} alt="마이페이지" className="h-6 w-6" />
-          <span className="text-[12px]">마이페이지</span>
-        </button>
-      </nav>
+      <BottomNav />
     </div>
   );
 };

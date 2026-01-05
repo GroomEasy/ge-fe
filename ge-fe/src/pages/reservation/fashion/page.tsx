@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Camera, Check, ChevronLeft, Upload, X } from "lucide-react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 const IMAGE_GUIDE = [
   "밝은 조명 하에서 고화질 사진이 필요해요.",
@@ -87,6 +87,7 @@ const releasePreview = (preview?: OutfitImage | null) => {
 
 export default function FashionReservationFlowPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const [step, setStep] = React.useState(1);
   const [introStage, setIntroStage] = React.useState<1 | 2>(1);
@@ -325,7 +326,9 @@ export default function FashionReservationFlowPage() {
       }
       return;
     }
-    navigate("/payment/order");
+    navigate("/payment/order", {
+      state: { from: `${location.pathname}${location.search}` },
+    });
   };
 
   const handlePreviewNext = () => {
@@ -364,7 +367,7 @@ export default function FashionReservationFlowPage() {
   const maxPercent = (priceMax / PRICE_MAX) * 100;
 
   return (
-    <div className="flex h-screen flex-col bg-white text-[#0f0f10]">
+    <div className="flex min-h-full flex-col bg-white text-[#0f0f10]">
       <header className="flex h-[44px] items-center px-[16px]">
         <button onClick={handleBack} aria-label="뒤로가기">
           <ChevronLeft className="h-[24px] w-[24px]" />
