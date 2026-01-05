@@ -27,6 +27,7 @@ import PortfolioLandingPage from "@/pages/category/portfolio/page";
 import { PaymentOrderPage } from "@/pages/payment/order/page";
 import { PaymentCompletePage } from "@/pages/payment/complete/page";
 import FashionReservationFlowPage from "@/pages/reservation/fashion/page";
+import { HairSetup } from "@/pages/hairFlow/page";
 
 // import { ProfileWritingListPage } from '../pages/profile/writing-list';
 // import { ProfileDetailPage } from '../pages/profile/detail';
@@ -136,6 +137,10 @@ export const router = createBrowserRouter([
   {
     path: "/reservation/fashion",
     element: <FashionReservationFlowPage />,
+  },
+  {
+    path: "/hair/setup",
+    element: <HairSetup />,
   },
   // {
   //   path: '/profile/writing-list',
