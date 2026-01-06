@@ -137,20 +137,4 @@ export const router = createBrowserRouter([
     path: "/hair/setup",
     element: <HairSetup />,
   },
-  // {
-  //   path: '/profile/writing-list',
-  //   element: <ProfileWritingListPage />,
-  // },
-  // {
-  //   path: '/profile/detail/:id',
-  //   element: <ProfileDetailPage />,
-  // },
-  // {
-  //   path: '/profile/write/:id',
-  //   element: <ProfileWritePage />,
-  // },
-  // {
-  //   path: '/profile/evaluation/:id',
-  //   element: <ProfileEvaluationPage />,
-  // },
 ]);
