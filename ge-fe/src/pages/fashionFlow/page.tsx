@@ -214,7 +214,11 @@ export default function FashionFlowPage() {
       return;
     }
     navigate("/payment/order", {
-      state: { from: `${location.pathname}${location.search}`, category: "패션" },
+      state: {
+        from: `${location.pathname}${location.search}`,
+        category: "패션",
+        step: 9,
+      },
     });
   };
 
@@ -230,7 +234,7 @@ export default function FashionFlowPage() {
       }
       return;
     }
-    navigate("/payment/order", { state: { category: "패션" } });
+    navigate("/payment/order", { state: { category: "패션", step: 9 } });
   };
 
   const handleBack = () => {

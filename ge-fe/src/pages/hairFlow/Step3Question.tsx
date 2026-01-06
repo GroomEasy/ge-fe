@@ -56,7 +56,10 @@ export function Step3Question({ onBack }: { onBack?: () => void; onDone?: () => 
   // };
 
   const handleSubmit = async () => {
-    nav("/payment/order");
+    // 라우팅 수정 신용섭: 원본
+    // nav("/payment/order");
+    // 라우팅 수정 신용섭: 결제에서 마지막 단계로 복귀할 수 있도록 step 전달
+    nav("/payment/order", { state: { from: "/hair/setup", step: 3 } });
   };
 
   return (
