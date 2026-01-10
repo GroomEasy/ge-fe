@@ -50,8 +50,8 @@ export default function BottomNav() {
     path === "/"
       ? "home"
       : path.startsWith("/category")
-        ? "category"
-          : path.startsWith("/chat")
+        ? "home"
+        : path.startsWith("/chat")
           ? "chat"
           : path.startsWith("/reservation")
             ? "community"

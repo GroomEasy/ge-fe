@@ -908,6 +908,21 @@ const HomePage = () => {
     }
   };
 
+  const formatScheduleLabel = (date: Date, timeId: string) => {
+    const parsed = /^t-(\d{2})(\d{2})$/.exec(timeId);
+    const hour24 = parsed ? Number(parsed[1]) : 0;
+    const minute = parsed ? Number(parsed[2]) : 0;
+    const isAM = hour24 < 12;
+    const meridiem = isAM ? "오전" : "오후";
+    let hour12 = hour24 % 12;
+    if (hour12 === 0) hour12 = 12;
+    const mm = String(minute).padStart(2, "0");
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    return `${year}년 ${month}월 ${day}일 ${meridiem} ${hour12}:${mm}`;
+  };
+
   const getReviewRoute = () => {
     if (selectedHomeTab === "전체") {
       return "/category/hair/reviews";
@@ -934,7 +949,7 @@ const HomePage = () => {
       </header>
 
       <main className="flex-1 overflow-y-auto pb-6 scrollbar-hide">
-        <section className="pt-[4px]">
+        <section className="sticky top-0 z-40 bg-white pt-[4px] pb-[8px]">
           <div className="flex items-center justify-between px-4 text-[16px] font-semibold">
             {homeTabs.map((tab) => (
               <button
@@ -945,7 +960,7 @@ const HomePage = () => {
                 onClick={() => {
                   setSelectedHomeTab(tab.label);
                   if (tab.route && tab.route !== "/") {
-                    navigate(tab.route);
+                    navigate(tab.route, { state: { fromHomeTab: true } });
                   }
                 }}
                 className={tab.label === selectedHomeTab ? "text-[#0f0f10]" : "text-[#989ba2]"}
@@ -1194,7 +1209,8 @@ const HomePage = () => {
           </div>
         </section>
 
-        <section className="px-4 pt-[32px]">
+        {false && (
+          <section className="px-4 pt-[32px]">
           <h2 className="text-[18px] font-semibold text-[#0f0f10]">필승 소개팅 컨설팅</h2>
 
           <div className="mt-[12px] flex gap-[8px] overflow-x-auto pb-2 scrollbar-hide">
@@ -1289,16 +1305,10 @@ const HomePage = () => {
               </article>
             ))}
           </div>
-        </section>
+          </section>
+        )}
 
-        <section className="px-4 pb-[24px] pt-[8px]">
-          <button
-            onClick={() => navigate("/reservation/fashion")}
-            className="flex h-[52px] w-full items-center justify-center rounded-[12px] bg-[#171719] text-[16px] font-semibold text-white"
-          >
-            예약(임시버튼)
-          </button>
-        </section>
+
       </main>
 
       <BottomNav />
@@ -1320,7 +1330,8 @@ const HomePage = () => {
       <DateTimeBottomSheet
         open={openCalendarSheet}
         onClose={() => setOpenCalendarSheet(false)}
-        onNext={() => {
+        onNext={({ date, timeId }) => {
+          sessionStorage.setItem("consult_schedule_label", formatScheduleLabel(date, timeId));
           setOpenCalendarSheet(false);
           navigate("/hair/setup");
         }}
