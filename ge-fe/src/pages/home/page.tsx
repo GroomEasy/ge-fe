@@ -657,6 +657,7 @@ const HomePage = () => {
   const [openTypeSheet, setOpenTypeSheet] = useState(false);
   const [openCalendarSheet, setOpenCalendarSheet] = useState(false);
   const [selectedConsultType, setSelectedConsultType] = useState<ConsultType>("MESSAGE");
+  const [noticeMessage, setNoticeMessage] = useState<string | null>(null);
 
   const formatDate = (value?: string) => {
     if (!value) {
@@ -725,6 +726,14 @@ const HomePage = () => {
     }
     return () => window.removeEventListener("resize", handleResize);
   }, [selectedHomeTab]);
+
+  useEffect(() => {
+    if (!noticeMessage) {
+      return;
+    }
+    const timer = window.setTimeout(() => setNoticeMessage(null), 2000);
+    return () => window.clearTimeout(timer);
+  }, [noticeMessage]);
 
   useEffect(() => {
     initializeAuth();
@@ -958,6 +967,10 @@ const HomePage = () => {
                   homeTabRefs.current[tab.label] = element;
                 }}
                 onClick={() => {
+                  if (tab.id === "makeup" || tab.id === "skin") {
+                    setNoticeMessage("준비중입니다.");
+                    return;
+                  }
                   setSelectedHomeTab(tab.label);
                   if (tab.route && tab.route !== "/") {
                     navigate(tab.route, { state: { fromHomeTab: true } });
@@ -976,6 +989,14 @@ const HomePage = () => {
             />
           </div>
         </section>
+
+        {noticeMessage && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+            <div className="rounded-[999px] bg-[#171719] px-[16px] py-[10px] text-[13px] font-medium text-white shadow-[0px_6px_20px_rgba(0,0,0,0.2)]">
+              {noticeMessage}
+            </div>
+          </div>
+        )}
 
         <section className="px-4 pt-5">
           <div className="flex gap-[4px] overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory">

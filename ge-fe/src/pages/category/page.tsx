@@ -94,15 +94,6 @@ const CategoryLandingPage = () => {
     return map[categoryKey] ?? '헤어';
   }, [categoryKey]);
 
-  const getReservationRoute = () => {
-    if (categoryKey === 'fashion') {
-      return '/reservation/fashion';
-    }
-    return '/hair/setup';
-  };
-
-  const canStartReservation = () => categoryKey === 'hair' || categoryKey === 'fashion';
-
   const handleExpertProfile = (expertId: number) => {
     navigate(`/experts/${expertId}`);
   };
@@ -117,13 +108,23 @@ const CategoryLandingPage = () => {
     }
   };
 
-  const openReservationFlow = () => {
-    if (!canStartReservation()) {
-      alert('해당 카테고리는 상담 예약이 준비 중입니다.');
+  const handleReservationSchedule = () => {
+    if (categoryKey === 'hair') {
+      setOpenTypeSheet(true);
       return;
     }
-    setOpenCalendarSheet(false);
-    setOpenTypeSheet(true);
+    if (categoryKey === 'fashion') {
+      setOpenTypeSheet(true);
+      return;
+    }
+    setNoticeMessage('해당 카테고리는 상담 예약이 준비 중입니다.');
+  };
+
+  const getReservationRoute = () => {
+    if (categoryKey === 'fashion') {
+      return '/reservation/fashion';
+    }
+    return '/hair/setup';
   };
 
   const formatScheduleLabel = (date: Date, timeId: string) => {
@@ -376,7 +377,7 @@ const CategoryLandingPage = () => {
       </header>
 
       <main className="flex-1 overflow-y-auto pb-6 scrollbar-hide">
-        <section className="sticky top-0 z-40 bg-white pt-[4px] pb-[8px]">
+        <section className="pt-[4px]">
           <div className="flex items-center justify-between px-4 text-[16px] font-semibold">
             {categoryTabs.map((tab) => (
               <button
@@ -450,7 +451,7 @@ const CategoryLandingPage = () => {
         </section>
 
         {false && (
-          <section className="px-4 pt-[32px]">
+        <section className="px-4 pt-[32px]">
           <div className="flex items-center justify-between">
             <h2 className="text-[18px] font-semibold text-[#0f0f10]">
               전문가들이 많이 추천하는 스타일
@@ -498,7 +499,7 @@ const CategoryLandingPage = () => {
               </article>
             ))}
           </div>
-          </section>
+        </section>
         )}
 
         <section className="mt-[32px] bg-[#f4f4f5]">
@@ -587,7 +588,7 @@ const CategoryLandingPage = () => {
         </section>
 
         {false && (
-          <section id="immediate-section" className="px-4 pt-[32px]">
+        <section id="immediate-section" className="px-4 pt-[32px]">
           <div className="flex items-center justify-between">
             <h2 className="text-[18px] font-semibold text-[#0f0f10]">즉시 상담이 가능한 전문가</h2>
             <button
@@ -653,14 +654,16 @@ const CategoryLandingPage = () => {
               </article>
             ))}
           </div>
-          </section>
+        </section>
         )}
 
         <section id="expert-section" className="px-4 pt-[32px]">
           <div className="flex items-center justify-between">
-            <h2 className="text-[18px] font-semibold text-[#0f0f10]">헤어 전문가</h2>
+            <h2 className="text-[18px] font-semibold text-[#0f0f10]">
+              {categoryLabel} 전문가
+            </h2>
             <button
-              onClick={() => navigate(`/category/${categoryKey}?section=experts`)}
+              onClick={() => navigate(`/explore?category=${categoryKey}`)}
               className="flex items-center gap-[2px] text-[14px] text-[#70737c]"
             >
               전체보기
@@ -738,7 +741,7 @@ const CategoryLandingPage = () => {
                       className="h-[36px] w-[95px] rounded-[4px] bg-[#171719] text-[14px] font-medium text-white"
                       onClick={(event) => {
                         event.stopPropagation();
-                        openReservationFlow();
+                        handleReservationSchedule();
                       }}
                     >
                       상담 예약
