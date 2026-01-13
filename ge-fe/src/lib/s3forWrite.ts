@@ -1,5 +1,6 @@
 export type PresignedUploadReq = {
   resourceType: string;
+  resourceId: number;
   imageType: string;
   fileName: string;
 };
@@ -12,6 +13,8 @@ export type PresignedUploadRes = {
   message?: string;
 };
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 function stripQuery(url: string) {
   const i = url.indexOf("?");
   return i === -1 ? url : url.slice(0, i);
@@ -20,18 +23,20 @@ function stripQuery(url: string) {
 export async function uploadImageViaPresignedUrl(opts: {
   file: File;
   resourceType: "consultation" | string;
+  resourceId: number;
   imageType: "hairstyle" | string;
   signal?: AbortSignal;
 }): Promise<{ url: string; s3Key: string }> {
-  const { file, resourceType, imageType, signal } = opts;
+  const { file, resourceType, resourceId, imageType, signal } = opts;
 
-  const presignRes = await fetch("/api/presigned-urls/upload", {
+  const presignRes = await fetch(`${API_BASE_URL}/presigned-urls/upload`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
     signal,
     body: JSON.stringify({
       resourceType,
+      resourceId,
       imageType,
       fileName: file.name,
     } satisfies PresignedUploadReq),

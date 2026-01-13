@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { DayPicker } from "react-day-picker";
+import { DayPicker, useDayPicker, type MonthCaptionProps } from "react-day-picker";
 import { ko } from "date-fns/locale";
 import "react-day-picker/dist/style.css";
 
@@ -33,6 +33,17 @@ function IconChevron({
       />
     </svg>
   );
+}
+
+function startOfDay(d: Date) {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x;
+}
+function addDays(date: Date, days: number) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
 }
 
 function toKoreanTimeLabel(hour24: number, minute: 0 | 30) {
@@ -79,18 +90,57 @@ function TimePill({
         "shrink-0 w-[88px] h-[36px] rounded-[6px] pre_cap_reg_13 transition",
         "active:scale-[0.98]",
         selected
-          ? cn(
-              "bg-[#008BFF] text-white",
-              // "shadow-[0_6px_18px_rgba(0,139,255,0.35)]",
-              //"ring-2 ring-[#008BFF]/20",
-            )
+          ? "bg-[#008BFF] text-white"
           : disabled
             ? "bg-[#F6F7F8] text-[#BFC4CC]"
-            : "bg-[#F4F4F5] text-[#c2c4c8] hover:bg-[#E9EBEF]",
+            : "bg-[#F4F4F5] text-[#6B6F78] hover:bg-[#E9EBEF]",
       )}
     >
       {label}
     </button>
+  );
+}
+
+/**
+ * ✅ 스샷처럼 "가운데 월 텍스트 + 좌/우 화살표" 한 줄로 구성
+ * (react-day-picker v9 => MonthCaption 사용)
+ */
+function MonthHeader(props: MonthCaptionProps) {
+  const { calendarMonth } = props;
+  const { goToMonth, nextMonth, previousMonth } = useDayPicker();
+
+  const label = `${calendarMonth.date.getFullYear()}년 ${calendarMonth.date.getMonth() + 1}월`;
+
+  return (
+    <div className="relative mb-4 flex items-center justify-center">
+      <button
+        type="button"
+        aria-label="이전 달"
+        disabled={!previousMonth}
+        onClick={() => previousMonth && goToMonth(previousMonth)}
+        className={cn(
+          "absolute left-0 inline-flex h-9 w-9 items-center justify-center rounded-full",
+          "text-[#121214] active:bg-[#F1F2F4] disabled:opacity-30",
+        )}
+      >
+        <IconChevron dir="left" />
+      </button>
+
+      <div className="text-[16px] font-extrabold text-[#121214]">{label}</div>
+
+      <button
+        type="button"
+        aria-label="다음 달"
+        disabled={!nextMonth}
+        onClick={() => nextMonth && goToMonth(nextMonth)}
+        className={cn(
+          "absolute right-0 inline-flex h-9 w-9 items-center justify-center rounded-full",
+          "text-[#121214] active:bg-[#F1F2F4] disabled:opacity-30",
+        )}
+      >
+        <IconChevron dir="right" />
+      </button>
+    </div>
   );
 }
 
@@ -103,13 +153,21 @@ export default function DateTimeBottomSheet({
   onClose: () => void;
   onNext: (payload: { date: Date; timeId: string }) => void;
 }) {
-  // 스샷과 동일하게 보이도록 고정(원하면 new Date()로 교체)
-  const today = useMemo(() => new Date(2025, 12, 7), []);
-  const [month, setMonth] = useState<Date>(new Date(2025, 12, 7));
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date(2025, 12, 7));
+  // ✅ 오늘 = 진짜 현재 날짜
+  const today = useMemo(() => startOfDay(new Date()), []);
+
+  // ✅ 스샷처럼: 오늘 포함 과거 비활성(= 내일부터 가능)
+  const disableBefore = useMemo(() => addDays(today, 1), [today]);
+
+  // ✅ 초기 month = 이번 달
+  const [month, setMonth] = useState<Date>(
+    () => new Date(today.getFullYear(), today.getMonth(), 1),
+  );
+
+  // ✅ 스샷처럼 기본 선택 상태(Next 활성) 원하면 "내일"을 기본 선택
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(() => addDays(today, 3)); // 필요 없으면 undefined로 바꿔도 됨
   const [selectedTimeId, setSelectedTimeId] = useState<string | null>("t-1130");
 
-  // ✅ 11:00 ~ 22:00, 30분 단위 자동 생성
   const timeSlots = useMemo(() => buildTimeSlots(11, 22, 30), []);
 
   // 열릴 때 스크롤 잠금
@@ -141,66 +199,65 @@ export default function DateTimeBottomSheet({
       {/* backdrop */}
       <button type="button" className="absolute inset-0 bg-black/45" onClick={onClose} />
 
-      {/* sheet */}
+      {/* sheet (스샷: 375px 폭, 둥근 상단) */}
       <div className="absolute inset-x-0 bottom-0 mx-auto w-full max-w-[375px] rounded-t-[24px] bg-white shadow-[0_-10px_30px_rgba(0,0,0,0.12)]">
         <div className="px-6 pt-6">
           <DayPicker
             mode="single"
             selected={selectedDate}
-            onSelect={setSelectedDate} // ✅ 이게 제일 깔끔
+            onSelect={setSelectedDate}
             month={month}
             onMonthChange={setMonth}
             showOutsideDays
             fixedWeeks
             locale={ko}
-            className="w-full"
+            weekStartsOn={0}
+            today={today}
+            disabled={{ before: disableBefore }}
+            hideNavigation
+            components={{
+              MonthCaption: MonthHeader,
+            }}
             formatters={{
-              formatCaption: (m) => `${m.getFullYear()}년 ${m.getMonth() + 1}월`,
               formatWeekdayName: (d) => ["일", "월", "화", "수", "목", "금", "토"][d.getDay()],
             }}
-            components={{
-              Chevron: (props) => {
-                const dir = props.orientation === "right" ? "right" : "left";
-                return <IconChevron dir={dir} className="text-[#121214]" />;
-              },
+            className="w-full"
+            classNames={{
+              months: "w-full",
+              month: "w-full",
+
+              // ✅ table 유지(깨짐 방지)
+              table: "w-full border-collapse",
+              head_cell: "pb-3 text-center text-[12px] font-semibold text-[#6B6F78]",
+              cell: "p-0 text-center align-middle",
+              row: "h-11",
+
+              // ✅ 날짜 버튼(스샷: 40px 원 / 선택 파랑 / 오늘 회색 원 / 과거 연회색)
+              day_button: cn(
+                "mx-auto flex h-10 w-10 items-center justify-center rounded-full",
+                "text-[14px] font-semibold text-[#121214] transition",
+                "hover:bg-[#EEF0F3]",
+                "focus:outline-none",
+                // 과거(비활성): 아주 연한 회색
+                "[&:disabled]:text-[#E3E7EE] [&:disabled]:opacity-100 [&:disabled]:cursor-default [&:disabled]:hover:bg-transparent",
+                // 선택: 파랑 원(#008BFF)
+                "aria-[selected=true]:bg-[#008BFF] aria-[selected=true]:text-white aria-[selected=true]:hover:bg-[#008BFF]",
+              ),
+
+              // 오늘(회색 원) - disabled여도 원은 유지되게
+              day_today:
+                "bg-[#EEF0F3] text-[#121214] hover:bg-[#EEF0F3] [&:disabled]:bg-[#EEF0F3] [&:disabled]:text-[#BFC4CC]",
+
+              // 달 밖 날짜(다음달 1일 등): 기본은 검정(비활성이면 위 disabled 스타일이 이김)
+              day_outside: "text-[#121214] opacity-100",
             }}
-            modifiers={{ today }}
-            classNames={
-              {
-                //   months: "w-full",
-                //   month: "w-full",
-                //   caption: "relative mb-4 flex items-center justify-center",
-                //   caption_label: "text-[16px] font-extrabold text-[#121214]",
-                //   nav: "absolute inset-y-0 left-0 right-0 flex items-center justify-between",
-                //   nav_button: "rounded-full p-2 text-[#121214] active:bg-[#F1F2F4] focus:outline-none",
-                //   nav_button_previous: "ml-1",
-                //   nav_button_next: "mr-1",
-                //   // ✅ 레이아웃은 기본 table을 최대한 유지(세로로 깨지는 것 방지)
-                //   table: "w-full border-collapse",
-                //   head_cell: "pb-3 text-center text-[12px] font-semibold text-[#6B6F78]",
-                //   cell: "p-0 text-center align-middle",
-                //   // ✅ 핵심: 선택 표시를 '버튼'에 aria-selected로 직접 먹임
-                //   day_button: cn(
-                //     "mx-auto flex h-10 w-10 items-center justify-center rounded-full",
-                //     "text-[14px] font-semibold text-[#121214] transition",
-                //     "hover:bg-[#EEF0F3]",
-                //     "aria-[selected=true]:bg-[#008BFF] aria-[selected=true]:text-white",
-                //   ),
-                //   // ✅ 오늘(회색 원)도 버튼에 먹이려면 이걸 같이 써줌
-                //   // DayPicker가 today에 day_today 클래스를 붙여줘서 버튼에도 적용됨(버전마다 다르면 아래가 대안)
-                //   day_today: "bg-[#EEF0F3] text-[#121214]",
-                //   // ✅ 이번 달 밖 날짜 더 연하게
-                //   day_outside: "text-[#E9EDF3] opacity-80",
-                //   day_disabled: "text-[#E9EDF3] opacity-60",
-              }
-            }
           />
 
           {/* divider */}
           <div className="mt-4 h-[1px] w-full bg-[#EEF0F3]" />
 
           {/* times */}
-          <div className="mt-4 overflow-x-auto scrollbar-hide pb-1">
+          <div className="mt-4 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <div className="flex gap-2">
               {timeSlots.map((t) => {
                 const selected = selectedTimeId === t.id;
@@ -220,7 +277,7 @@ export default function DateTimeBottomSheet({
             </div>
           </div>
 
-          {/* next */}
+          {/* next (스샷: 54px, radius 4, 검정 버튼) */}
           <button
             type="button"
             disabled={!canNext}
@@ -229,8 +286,8 @@ export default function DateTimeBottomSheet({
               onNext({ date: selectedDate, timeId: selectedTimeId });
             }}
             className={cn(
-              "mt-5 mb-5 w-[342px] h-[54px] w-full rounded-[4px] pre_subtitle_semi_16",
-              canNext ? "bg-[#0f0f10] text-white active:opacity-90" : "bg-[#E6E7EA] text-[#A9ADB6]",
+              "mt-5 mb-5 w-full h-[54px] rounded-[4px] pre_subtitle_semi_16",
+              canNext ? "bg-[#0F0F10] text-white active:opacity-90" : "bg-[#E6E7EA] text-[#A9ADB6]",
             )}
           >
             다음
