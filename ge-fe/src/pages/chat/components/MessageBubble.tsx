@@ -64,20 +64,17 @@
 
 "use client";
 
-import { Avatar } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { ChatMessage } from "@/types/chat";
-import Minho from "@/images/chat/minho.png";
 
 type Props = {
   message: ChatMessage;
-  myUserId?: number;
+  myUserId?: number | null;
+  opponentProfileImage?: string | null;
 };
 
-export function MessageBubble({ message, myUserId }: Props) {
-  // TODO: userId 조회하기
-  const myUserIdLocal = 1;
-  myUserId = myUserIdLocal;
-  const isMine = myUserId != null && message.senderId === myUserId;
+export function MessageBubble({ message, myUserId, opponentProfileImage }: Props) {
+  const isMine = message.senderId < 0 || (myUserId != null && message.senderId === myUserId);
 
   const isQuestionCard = message.messageType === "QUESTION";
   const isSolutionCard = message.messageType === "SOLUTION";
@@ -123,7 +120,14 @@ export function MessageBubble({ message, myUserId }: Props) {
     return (
       <div className="flex items-end gap-3">
         <Avatar className="h-9 w-9">
-          <img src={Minho} alt="용민호 전문가" className="h-full w-full object-cover" />
+          {opponentProfileImage ? (
+            <AvatarImage
+              src={opponentProfileImage}
+              alt="profile"
+              className="h-full w-full object-cover"
+            />
+          ) : null}
+          <AvatarFallback className="bg-slate-200" />
         </Avatar>
 
         <div className={cardBox}>
@@ -155,8 +159,19 @@ export function MessageBubble({ message, myUserId }: Props) {
   return (
     <div className="flex items-start gap-3">
       <> {console.log(myUserId, message.senderId)}</>
+      {/* <Avatar className="h-9 w-9">
+        <img src={opponentProfileImage} alt="" className="h-full w-full object-cover" />
+      </Avatar> */}
+
       <Avatar className="h-9 w-9">
-        <img src={Minho} alt="용민호 전문가" className="h-full w-full object-cover" />
+        {opponentProfileImage ? (
+          <AvatarImage
+            src={opponentProfileImage}
+            alt="profile"
+            className="h-full w-full object-cover"
+          />
+        ) : null}
+        <AvatarFallback className="bg-slate-200" />
       </Avatar>
 
       <div className={textBubbleOthers}>

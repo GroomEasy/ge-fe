@@ -31,6 +31,7 @@ import { HairSetup } from "@/pages/hairFlow/page";
 import ServiceReadyPage from "@/pages/service-ready/page";
 import CategoryBestReviewsPage from "@/pages/category/reviews/page";
 import CategoryExpertListPage from "@/pages/category/experts/page";
+import ReviewWritePage from "@/pages/myPage/review/writeReview";
 
 export const router = createBrowserRouter([
   {
@@ -75,7 +76,7 @@ export const router = createBrowserRouter([
     element: <FaceStep />,
   },
   {
-    path: "/chat",
+    path: "/chatList/:chatroomId",
     element: <Chat />,
   },
   {
@@ -148,6 +149,10 @@ export const router = createBrowserRouter([
   {
     path: "/hair/setup",
     element: <HairSetup />,
+  },
+  {
+    path: "/reviewWrite/:consultationId",
+    element: <ReviewWritePage />,
   },
   {
     path: "/service-ready",

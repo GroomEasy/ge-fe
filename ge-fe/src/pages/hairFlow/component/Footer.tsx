@@ -72,25 +72,27 @@ export default function Footer({
   onClick: () => void;
 }) {
   return (
-    // ✅ 전체 폭을 덮는 검정 바(분단 방지 핵심)
-    <div className="fixed inset-x-0 bottom-0 z-50 bg-black">
-      {/* ✅ 가운데 max-width는 안쪽에서만 */}
-      <div className="mx-auto w-full max-w-[420px]">
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={onClick}
-          className={[
-            "h-[64px] w-full pre_subtitle_semi_16",
-            // ✅ disabled 배경을 '불투명'으로 (bg-black/40 금지)
-            disabled ? "bg-[#2b2b2b] text-white/70" : "bg-black text-white active:bg-black/90",
-          ].join(" ")}
-        >
-          {label}
-        </button>
+    <div className="fixed inset-x-0 bottom-0 z-50">
+      {/* ✅ 위 폼이랑 똑같이: max-w + 좌우 패딩 */}
+      <div className="mx-auto w-full max-w-[420px] px-4">
+        {/* ✅ 검정 배경은 '컨테이너 폭' 안에서만 */}
+        <div className="bg-black">
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={onClick}
+            className={[
+              "h-[64px] w-full pre_subtitle_semi_16",
+              // ✅ disabled는 투명도 말고 불투명으로 (분단/비침 방지)
+              disabled ? "bg-[#2b2b2b] text-white/70" : "bg-black text-white active:bg-black/90",
+            ].join(" ")}
+          >
+            {label}
+          </button>
 
-        {/* ✅ safe-area도 검정으로 채우기 */}
-        <div className="h-[env(safe-area-inset-bottom)] bg-black" />
+          {/* safe-area도 검정(모바일에서 홈 인디케이터 영역) */}
+          <div className="h-[env(safe-area-inset-bottom)] bg-black" />
+        </div>
       </div>
     </div>
   );
