@@ -422,12 +422,12 @@ export default function EditorPage() {
 
   return (
     <main className="min-h-full flex items-center justify-center py-5 px-[2px] overflow-y-auto scrollbar-hide">
-      <Card className="w-full max-w-5xl ">
+      <Card className="w-full max-w-5xl border-none shadow-none">
         <CardHeader className="space-y-1">
           <CardTitle className="text-lg font-semibold text-slate-900">
             "박오징"님에 대한 솔루션지 작성
           </CardTitle>
-          <CardDescription className="text-sm text-slate-500">... (생략)</CardDescription>
+          <CardDescription className="text-sm text-slate-500">... (고민지 생략)</CardDescription>
         </CardHeader>
 
         <Separator />

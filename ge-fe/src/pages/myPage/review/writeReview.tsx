@@ -459,7 +459,7 @@ export default function ReviewWritePage() {
                     </div>
                   )}
 
-                  <button
+                  {/* <button
                     type="button"
                     onClick={() => removeImage(key)}
                     aria-label="이미지 삭제"
@@ -473,6 +473,15 @@ export default function ReviewWritePage() {
                         strokeLinecap="round"
                       />
                     </svg>
+                  </button> */}
+
+                  <button
+                    type="button"
+                    onClick={() => removeImage(key)}
+                    className="absolute right-2 top-2 inline-flex h-4 w-4 items-center justify-center rounded-full bg-[#292a2d]"
+                    aria-label="삭제"
+                  >
+                    <X className="h-3 w-3 text-white" />
                   </button>
                 </div>
               );

@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { DayPicker, useDayPicker, type MonthCaptionProps } from "react-day-picker";
 import { ko } from "date-fns/locale";
-import "react-day-picker/style.css"; // ✅ v9 권장 경로 :contentReference[oaicite:1]{index=1}
+import "react-day-picker/style.css";
+import Left from "@/images/reservationFlow/left.svg?react";
+import Right from "@/images/reservationFlow/right.svg?react";
 
 type TimeSlot = { id: string; label: string; disabled?: boolean };
 
@@ -9,31 +11,31 @@ function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
-function IconChevron({
-  dir = "left",
-  className = "",
-}: {
-  dir?: "left" | "right";
-  className?: string;
-}) {
-  const rotate = dir === "right" ? "rotate-180" : "";
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className={cn("h-5 w-5", rotate, className)}
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M15 18l-6-6 6-6"
-        stroke="currentColor"
-        strokeWidth="2.25"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
+// function IconChevron({
+//   dir = "left",
+//   className = "",
+// }: {
+//   dir?: "left" | "right";
+//   className?: string;
+// }) {
+//   const rotate = dir === "right" ? "rotate-180" : "";
+//   return (
+//     <svg
+//       viewBox="0 0 24 24"
+//       className={cn("h-5 w-5", rotate, className)}
+//       fill="none"
+//       aria-hidden="true"
+//     >
+//       <path
+//         d="M15 18l-6-6 6-6"
+//         stroke="currentColor"
+//         strokeWidth="2.25"
+//         strokeLinecap="round"
+//         strokeLinejoin="round"
+//       />
+//     </svg>
+//   );
+// }
 
 function startOfDay(d: Date) {
   const x = new Date(d);
@@ -111,23 +113,22 @@ function MonthHeader(props: MonthCaptionProps) {
   const label = `${calendarMonth.date.getFullYear()}년 ${calendarMonth.date.getMonth() + 1}월`;
 
   return (
-    <div className="relative mb-4 flex items-center justify-center">
-      {/* ✅ 1) 왼쪽 화살표: 과거니까 회색 */}
+    <div className="mb-4 flex items-center justify-center gap-3">
       <button
         type="button"
         aria-label="이전 달"
         disabled={!previousMonth}
         onClick={() => previousMonth && goToMonth(previousMonth)}
         className={cn(
-          "absolute left-0 inline-flex h-9 w-9 items-center justify-center rounded-full",
+          "inline-flex h-9 w-9 items-center justify-center rounded-full",
           "text-[#C9CDD5] active:bg-[#F1F2F4]",
           "disabled:opacity-100 disabled:text-[#C9CDD5]",
         )}
       >
-        <IconChevron dir="left" />
+        <Left />
       </button>
 
-      <div className="text-[16px] font-extrabold text-[#121214]">{label}</div>
+      <div className="pre_subtitle_semi_16 text-[#0f0f10]">{label}</div>
 
       <button
         type="button"
@@ -135,12 +136,12 @@ function MonthHeader(props: MonthCaptionProps) {
         disabled={!nextMonth}
         onClick={() => nextMonth && goToMonth(nextMonth)}
         className={cn(
-          "absolute right-0 inline-flex h-9 w-9 items-center justify-center rounded-full",
+          "inline-flex h-9 w-9 items-center justify-center rounded-full",
           "text-[#121214] active:bg-[#F1F2F4]",
           "disabled:text-[#C9CDD5] disabled:opacity-100",
         )}
       >
-        <IconChevron dir="right" />
+        <Right />
       </button>
     </div>
   );
@@ -157,8 +158,10 @@ export default function DateTimeBottomSheet({
 }) {
   const today = useMemo(() => startOfDay(new Date()), []);
 
-  // 오늘 포함 과거 비활성(= 내일부터 선택 가능)
-  const disableBefore = useMemo(() => addDays(today, 1), [today]);
+  // // 오늘 포함 과거 비활성(= 내일부터 선택 가능)
+  // const disableBefore = useMemo(() => addDays(today, 1), [today]);
+
+  const disableBefore = useMemo(() => today, [today]);
 
   // ✅ 이전 달로 못 가게 (v9는 startMonth) :contentReference[oaicite:2]{index=2}
   const startMonth = useMemo(() => new Date(today.getFullYear(), today.getMonth(), 1), [today]);
@@ -245,11 +248,10 @@ export default function DateTimeBottomSheet({
                 "[&>button]:!text-white",
                 "[&>button]:hover:!bg-[#008BFF]",
               ),
-              today:
-                cn(),
-                // "[&>button]:!bg-[#EEF0F3]",
-                // "[&>button]:!text-[#121214]",
-                // "[&>button]:hover:!bg-[#EEF0F3]",
+              today: cn(),
+              // "[&>button]:!bg-[#EEF0F3]",
+              // "[&>button]:!text-[#121214]",
+              // "[&>button]:hover:!bg-[#EEF0F3]",
               disabled: cn(
                 "[&>button]:!text-[#AEB0B6]",
                 "[&>button]:cursor-default",

@@ -25,39 +25,15 @@ function formatYYYYMMDD(iso: string) {
   return `${yyyy}.${mm}.${dd}`;
 }
 
+function toSafeIso(isoLike: string) {
+  // "2026-01-12T05:20:05.342085" -> "2026-01-12T05:20:05.342085Z"
+  // (Z가 없으면 UTC로 간주되게 붙여주기)
+  return /Z$|[+-]\d{2}:\d{2}$/.test(isoLike) ? isoLike : `${isoLike}Z`;
+}
+
 function categoryLabel(cat: string) {
   if (cat === "HAIR") return "헤어";
   return cat;
-}
-
-// function DocIcon() {
-//   return (
-//     <svg width="72" height="72" viewBox="0 0 72 72" className="fill-none">
-//       <path
-//         d="M22 16h22l10 10v30a8 8 0 0 1-8 8H22a8 8 0 0 1-8-8V24a8 8 0 0 1 8-8Z"
-//         stroke="#6B6B6B"
-//         strokeWidth="3.2"
-//         strokeLinejoin="round"
-//       />
-//       <path d="M44 16v10h10" stroke="#6B6B6B" strokeWidth="3.2" strokeLinejoin="round" />
-//       <path d="M24 34h24" stroke="#6B6B6B" strokeWidth="3.2" strokeLinecap="round" />
-//       <path d="M24 44h18" stroke="#6B6B6B" strokeWidth="3.2" strokeLinecap="round" />
-//       <path d="M24 54h22" stroke="#6B6B6B" strokeWidth="3.2" strokeLinecap="round" />
-//     </svg>
-//   );
-// }
-
-function HeartIcon({ filled = false }: { filled?: boolean }) {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" className="fill-none">
-      <path
-        d="M12 21s-7-4.6-9.3-8.6C.7 9.2 2.4 6 6 6c2 0 3.4 1.1 4 2.1.6-1 2-2.1 4-2.1 3.6 0 5.3 3.2 3.3 6.4C19 16.4 12 21 12 21Z"
-        stroke="#111111"
-        strokeWidth="1.8"
-        fill={filled ? "#111111" : "none"}
-      />
-    </svg>
-  );
 }
 
 export default function MyReviewPage() {
@@ -153,7 +129,7 @@ export default function MyReviewPage() {
           <AvailableTab
             items={available}
             onWrite={(consultationId) => nav(`/reviewWrite/${consultationId}`)}
-            onGoExperts={() => nav("/experts")}
+            onGoExperts={() => nav("/explore")}
           />
         ) : (
           <CompletedTab
@@ -306,7 +282,9 @@ function CompletedTab({
   return (
     <div>
       {items.map((it, idx) => {
-        const date = formatYYYYMMDD(it.consultationDate);
+        // const date = formatYYYYMMDD(it.consultationDate);
+        const date = formatYYYYMMDD(toSafeIso(it.createdAt ?? it.consultationDate));
+
         const isExpanded = Boolean(expanded[it.reviewId]);
 
         const img1 = it.imageUrls?.[0] ?? "";

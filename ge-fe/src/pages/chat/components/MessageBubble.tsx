@@ -1,67 +1,3 @@
-// "use client";
-
-// import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-// import type { ChatMessage } from "@/types/chat";
-
-// type Props = {
-//   message: ChatMessage;
-//   myUserId?: number;
-// };
-
-// export function MessageBubble({ message, myUserId }: Props) {
-//   const isMine = myUserId != null && message.senderId === myUserId;
-
-//   const isCard = message.messageType === "QUESTION" || message.messageType === "SOLUTION";
-
-//   const actionLabel =
-//     message.messageType === "QUESTION"
-//       ? "고민지 보기"
-//       : message.messageType === "SOLUTION"
-//         ? "솔루션지 보기"
-//         : undefined;
-
-//   const baseBubble = "max-w-[80%] rounded-[20px] px-4 py-3 text-[13px] leading-relaxed";
-
-//   if (isMine) {
-//     return (
-//       <div className="flex justify-end">
-//         <div className={`${baseBubble} bg-[#2F80FF] text-white shadow-sm`}>
-//           <p className="whitespace-pre-line">{message.content}</p>
-//           {isCard && actionLabel && (
-//             <button
-//               type="button"
-//               className="mt-3 w-full rounded-xl bg-white py-3 text-[13px] font-semibold text-[#2F80FF]"
-//             >
-//               {actionLabel}
-//             </button>
-//           )}
-//         </div>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div className="flex items-start gap-2">
-//       <Avatar className="mt-1 h-8 w-8 bg-[#D9D9D9] text-slate-600">
-//         <AvatarFallback className="text-xs">?</AvatarFallback>
-//       </Avatar>
-//       <div
-//         className={`${baseBubble} ${isCard ? "bg-[#F8F8FC] text-slate-900 border border-slate-200" : "bg-white text-slate-900 shadow-sm"}`}
-//       >
-//         <p className="whitespace-pre-line">{message.content}</p>
-//         {isCard && actionLabel && (
-//           <button
-//             type="button"
-//             className="mt-3 w-full rounded-xl bg-white py-3 text-[13px] font-semibold text-slate-800"
-//           >
-//             {actionLabel}
-//           </button>
-//         )}
-//       </div>
-//     </div>
-//   );
-// }
-
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -90,11 +26,8 @@ export function MessageBubble({ message, myUserId, opponentProfileImage }: Props
         ? "솔루션지 보기"
         : undefined;
 
-  const cardBox =
-    "w-full max-w-[286px] border border-[#f1f1f6] rounded-[8px] bg-white px-4 py-3 pre_body_reg_13 text-[#181818]";
-
-  const cardButton =
-    "mt-3 w-full rounded-[8px] bg-[#EAF3FF] py-3 text-[13px] font-semibold text-[#2B6DEB]";
+  // const cardButton =
+  //   "mt-3 w-full rounded-[8px] bg-[#EAF3FF] py-3 text-[13px] font-semibold text-[#2B6DEB]";
 
   const textBubbleOthers =
     "max-w-[254px] border border-[#f1f1f6] rounded-[8px] rounded-bl-none bg-white px-[15px] py-[12px] pre_body_reg_13 text-[#181818]";
@@ -102,17 +35,104 @@ export function MessageBubble({ message, myUserId, opponentProfileImage }: Props
   const textBubbleMine =
     "max-w-[291px] border border-[#f1f1f6] rounded-[8px] rounded-br-none bg-white px-[15px] py-[12px] pre_body_reg_13 text-[#181818]";
 
-  // QUESTION 카드: 가운데 카드 (아바타 없음)
+  // QUESTION(=CONCERN) 카드: 기본은 가운데, 내 메시지면 오른쪽
+  // if (isQuestionCard) {
+  //   const boxClass = [
+  //     "w-full max-w-[246px]",
+  //     "border border-[#f1f1f6] rounded-[8px] rounded-bl-none bg-white",
+  //     "p-[12px]",
+  //   ].join(" ");
+
+  //   const MineboxClass = [
+  //     "w-full max-w-[246px]",
+  //     "border border-[#f1f1f6] rounded-[8px] rounded-br-none bg-white",
+  //     "p-[12px]",
+  //   ].join(" ");
+
+  //   return (
+  //     <div className={isMine ? "flex justify-end" : "flex justify-center"}>
+  //       <div className={isMine ? MineboxClass : boxClass}>
+  //         {/* ✅ 스샷처럼 좌측 정렬(기존 text-center 제거) */}
+  //         <p className="whitespace-pre-wrap pre_cap_reg_13 text-[#181818]">
+  //           김바보님의 고민지가 도착했습니다.
+  //         </p>
+  //         {/* <p className="whitespace-pre-wrap pre_cap_reg_13 text-[#181818]">{message.content}</p> */}
+
+  //         {actionLabel && (
+  //           <button
+  //             type="button"
+  //             onClick={() => nav(`/concern/${message.relatedId}`)}
+  //             className={cardButton}
+  //           >
+  //             {actionLabel}
+  //           </button>
+  //         )}
+  //       </div>
+  //     </div>
+  //   );
+  // }
+
+  // QUESTION(=CONCERN) 카드
   if (isQuestionCard) {
+    const boxClass = [
+      "flex flex-col gap-2",
+      "border border-[#f1f1f6] rounded-[8px] rounded-bl-none bg-white",
+      "p-[12px] w-[246px]",
+    ].join(" ");
+
+    const mineBoxClass = [
+      "flex flex-col gap-2",
+      "border border-[#f1f1f6] rounded-[8px] rounded-br-none bg-white",
+      "p-[12px] w-[246px]",
+    ].join(" ");
+
+    // ✅ 내 메시지면: 오른쪽(아바타 없음)
+    if (isMine) {
+      return (
+        <div className="flex justify-end">
+          <div className={mineBoxClass}>
+            {/* <p className="whitespace-pre-wrap pre_cap_reg_13 text-[#181818]">{message.content}</p> */}
+            <p className="whitespace-pre-wrap pre_cap_reg_13 text-[#181818]">
+              김바보님의 고민지가 도착했습니다.
+            </p>
+            {actionLabel && (
+              <button
+                type="button"
+                onClick={() => nav(`/concern/${message.relatedId}`)}
+                //className={cardButton}
+                className="w-full rounded-[8px] bg-[#E5f4ff] py-[8px] px-[20px] pre_cap_semi_13 text-[#008BFF] active:scale-[0.98]"
+              >
+                {actionLabel}
+              </button>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // ✅ 상대 메시지면: 왼쪽 + 아바타
     return (
-      <div className="flex justify-center">
-        <div className={cardBox}>
-          <p className="text-center">{message.content}</p>
+      <div className="flex items-start gap-3">
+        <Avatar className="h-9 w-9 shrink-0">
+          {opponentProfileImage ? (
+            <AvatarImage
+              src={opponentProfileImage}
+              alt="profile"
+              className="h-full w-full object-cover"
+            />
+          ) : null}
+          <AvatarFallback className="bg-slate-200" />
+        </Avatar>
+
+        <div className={boxClass}>
+          <p className="whitespace-pre-wrap pre_cap_reg_13 text-[#181818]">{message.content}</p>
+
           {actionLabel && (
             <button
               type="button"
               onClick={() => nav(`/concern/${message.relatedId}`)}
-              className={cardButton}
+              // className={cardButton}
+              className="w-full rounded-[8px] bg-[#E5f4ff] py-[8px] px-[20px] pre_cap_semi_13 text-[#008BFF] active:scale-[0.98]"
             >
               {actionLabel}
             </button>
@@ -151,10 +171,41 @@ export function MessageBubble({ message, myUserId, opponentProfileImage }: Props
 
   // SOLUTION 카드
   if (isSolutionCard) {
+    const boxClass = [
+      "flex flex-col gap-2",
+      "border border-[#f1f1f6] rounded-[8px] rounded-bl-none bg-white",
+      "p-[12px] w-[250px]",
+    ].join(" ");
+
+    const mineBoxClass = [
+      "flex flex-col gap-2",
+      "border border-[#f1f1f6] rounded-[8px] rounded-br-none bg-white",
+      "p-[12px] w-[250px]",
+    ].join(" ");
+
+    // ✅ 내 메시지면: 오른쪽(아바타 없음)
+    if (isMine) {
+      return (
+        <div className="flex justify-end">
+          <div className={mineBoxClass}>
+            <p className="whitespace-pre-wrap pre_cap_reg_13 text-[#181818]">{message.content}</p>
+
+            {actionLabel && (
+              <button
+                type="button"
+                className="w-full rounded-[8px] bg-[#E5f4ff] py-[8px] px-[20px] pre_cap_semi_13 text-[#008BFF] active:scale-[0.98]"
+              >
+                {actionLabel}
+              </button>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // ✅ 상대 메시지면: 왼쪽 + 아바타
     return (
-      // 1. items-end -> items-start로 변경 (프로필 사진을 상단으로)
       <div className="flex items-start gap-3">
-        {/* 아바타가 찌그러지지 않게 shrink-0 추가 */}
         <Avatar className="h-9 w-9 shrink-0">
           {opponentProfileImage ? (
             <AvatarImage
@@ -166,16 +217,12 @@ export function MessageBubble({ message, myUserId, opponentProfileImage }: Props
           <AvatarFallback className="bg-slate-200" />
         </Avatar>
 
-        {/* 2. 카드 박스 스타일링 */}
-        <div className="flex flex-col gap-2 border border-[#f1f1f6] rounded-[8px] rounded-bl-none bg-white p-[12px] max-w-[250px]">
-          {/* 텍스트 줄바꿈 및 스타일 */}
+        <div className={boxClass}>
           <p className="whitespace-pre-wrap pre_cap_reg_13 text-[#181818]">{message.content}</p>
 
           {actionLabel && (
             <button
               type="button"
-              // onClick={() => nav(`/concern/${message.relatedId}`)}
-              // 버튼 스타일: 꽉 찬 너비, 연한 파란 배경, 파란 글씨
               className="w-full rounded-[8px] bg-[#E5f4ff] py-[8px] px-[20px] pre_cap_semi_13 text-[#008BFF] active:scale-[0.98]"
             >
               {actionLabel}

@@ -56,6 +56,7 @@ export type ReviewCompletedItem = {
   content: string;
   imageUrls: string[];
   hashtags?: string[];
+  createdAt?: string;
 };
 
 async function getJson<T>(url: string): Promise<T> {
