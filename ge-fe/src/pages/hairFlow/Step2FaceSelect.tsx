@@ -4,7 +4,6 @@ import Footer from "./component/Footer";
 import { cn } from "@/lib/utils";
 import { useStyleSetupStore } from "@/stores/useHairSetupStore";
 import type { FaceStrengthTag, FaceCoverTag } from "@/stores/useHairSetupStore";
-import { useEffect } from "react";
 
 const STRENGTH_TAGS: FaceStrengthTag[] = [
   "눈",
@@ -43,12 +42,6 @@ export function Step2FaceSelect({ onNext, onBack }: { onNext: () => void; onBack
 
   const isStrengthSelected = (t: FaceStrengthTag) => faceStrengthTags.includes(t);
   const isCoverSelected = (t: FaceCoverTag) => faceCoverTags.includes(t);
-
-  useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
-  }, []);
 
   return (
     <div className="mx-auto min-h-[100dvh] w-full max-w-[420px] bg-white pb-28">

@@ -74,7 +74,7 @@ export default function Footer({
   return (
     <div className="fixed inset-x-0 bottom-0 z-50">
       {/* ✅ 위 폼이랑 똑같이: max-w + 좌우 패딩 */}
-      <div className="mx-auto w-full max-w-[420px] px-4">
+      <div className="mx-auto w-full max-w-[410px] px-4">
         {/* ✅ 검정 배경은 '컨테이너 폭' 안에서만 */}
         <div className="bg-black">
           <button
@@ -84,7 +84,7 @@ export default function Footer({
             className={[
               "h-[64px] w-full pre_subtitle_semi_16",
               // ✅ disabled는 투명도 말고 불투명으로 (분단/비침 방지)
-              disabled ? "bg-[#2b2b2b] text-white/70" : "bg-black text-white active:bg-black/90",
+              disabled ? "bg-[#AEB0B6] text-white" : "bg-[#0f0f10] text-white active:bg-black/90",
             ].join(" ")}
           >
             {label}

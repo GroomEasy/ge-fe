@@ -7,7 +7,7 @@ import Write from "@/images/mypage/wirte.svg?react";
 import Heart from "@/images/mypage/heart.svg?react";
 import Solution from "@/images/mypage/solution.svg?react";
 import Payment from "@/images/mypage/payment.svg?react";
-import Star from "@/images/mypage/star.svg?react";
+import EmptyStar from "@/images/mypage/emptyStar.svg?react";
 import Question from "@/images/mypage/question.svg?react";
 import DeleteUser from "@/images/mypage/deleteUser.svg?react";
 import Logout from "@/images/mypage/logout.svg?react";
@@ -100,7 +100,7 @@ export default function MyPage() {
       count: me?.reviewCount ?? 0,
       footerText: "",
       icon: <Write />,
-      onClick: () => console.log("나의 후기"),
+      onClick: () => navigate("/myreview"),
     },
   ];
 
@@ -121,11 +121,11 @@ export default function MyPage() {
     items: MenuItem[];
   }> = [
     {
-      title: "결과 확인하기",
+      title: "상담 내역",
       items: [
         {
           key: "solution",
-          label: "전문가의 솔루션 확인하기",
+          label: "솔루션 확인하기",
           icon: <Solution />,
           onClick: () => console.log("솔루션 확인"),
         },
@@ -148,7 +148,7 @@ export default function MyPage() {
         {
           key: "interests",
           label: "관심 분야 설정",
-          icon: <Star className="text-black fill-white" />,
+          icon: <EmptyStar />,
           onClick: () => console.log("관심 분야"),
         },
         // {

@@ -111,7 +111,7 @@ export function Step1SidePhotos({
         valueKey={images.front[0]}
         resourceType="consultation"
         resourceId={reservationId}
-        imageType="hairstyle"
+        imageType="front"
         onUploadedKey={(key) => setSingleImage("front", key)}
         onRemove={() => clearSingleImage("front")}
       />
@@ -159,7 +159,7 @@ export function Step1SidePhotos({
         valueKey={images.left[0]}
         resourceType="consultation"
         resourceId={reservationId}
-        imageType="hairstyle"
+        imageType="left"
         onUploadedKey={(key) => setSingleImage("left", key)}
         onRemove={() => clearSingleImage("left")}
       />
@@ -170,14 +170,14 @@ export function Step1SidePhotos({
         valueKey={images.right[0]}
         resourceType="consultation"
         resourceId={reservationId}
-        imageType="hairstyle"
+        imageType="right"
         onUploadedKey={(key) => setSingleImage("right", key)}
         onRemove={() => clearSingleImage("right")}
       />
 
       <Footer
-        //disabled={!canNext}
-        disabled={canNext}
+        disabled={!canNext}
+        //disabled={canNext}
         onClick={onNext}
       />
     </div>

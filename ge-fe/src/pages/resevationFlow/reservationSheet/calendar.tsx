@@ -215,44 +215,47 @@ export default function DateTimeBottomSheet({
             formatters={{
               formatWeekdayName: (d) => ["일", "월", "화", "수", "목", "금", "토"][d.getDay()],
             }}
-            className="w-full"
+            className={cn(
+              "w-full",
+              "[--rdp-accent-color:#008BFF]",
+              "[--rdp-accent-background-color:#008BFF]",
+              "[--rdp-day_button-border-radius:9999px]",
+            )}
             classNames={{
               months: "w-full",
               month: "w-full",
               month_grid: "w-full border-collapse",
               weekday: "pb-3 text-center text-[12px] font-semibold text-[#6B6F78]",
-              day: "p-0 text-center align-middle", // day에는 스타일 최소화
+              day: "p-0 text-center align-middle",
 
-              /**
-               * 🔥 핵심 수정 부분
-               * 버튼 자체의 클래스(day_button) 안에서 '기본', '호버', '선택됨' 상태를 모두 정의합니다.
-               */
+              // ✅ 버튼 기본 (선택 스타일은 여기서 하지 말고 selected/today/disabled에서 처리)
               day_button: cn(
-                // 1. 공통 레이아웃
-                "mx-auto flex h-10 w-10 items-center justify-center rounded-full transition focus:outline-none",
+                "mx-auto flex h-[36px] w-[36px] items-center justify-center rounded-full transition focus:outline-none",
                 "pre_cap_reg_14",
-
-                // 2. [기본 상태] (선택 안됐을 때)
-                // aria-selected가 없을 때만 적용되도록 설정하지 않아도 되지만,
-                // 아래 aria-selected 스타일이 덮어쓰도록 순서를 배치합니다.
                 "text-[#0f0f10] hover:bg-[#EEF0F3]",
-
-                // 3. [선택된 상태] (Tailwind 'aria-selected' Modifier 사용)
-                // React-day-picker는 선택된 날짜 버튼에 자동으로 aria-selected="true"를 붙입니다.
-                // Tailwind는 이를 감지하여 스타일을 적용합니다.
-                "aria-selected:bg-![#008BFF] aria-selected:!text-white",
-
-                // 선택된 상태에서는 호버해도 파란색 유지 (기본 회색 호버 덮어쓰기)
-                "aria-selected:hover:bg-[#008BFF]",
-
-                // 4. [비활성 상태] (날짜가 disable 되었을 때)
-                "disabled:text-[#AEB0B6] disabled:cursor-default disabled:hover:bg-transparent",
               ),
 
-              // 나머지는 비워두거나 최소화
-              selected: "",
-              today: "",
-              disabled: "",
+              /**
+               * ✅ (B) 제일 중요: selected/today/disabled는 “day(셀)”에 붙을 수 있음
+               * 그래서 그 안의 button을 그냥 잡아버리면 100% 먹음.
+               * (.rdp-day_button 같은 기본 클래스에 의존하지 않음)
+               */
+              selected: cn(
+                "[&>button]:!bg-[#008BFF]",
+                "[&>button]:!text-white",
+                "[&>button]:hover:!bg-[#008BFF]",
+              ),
+              today:
+                cn(),
+                // "[&>button]:!bg-[#EEF0F3]",
+                // "[&>button]:!text-[#121214]",
+                // "[&>button]:hover:!bg-[#EEF0F3]",
+              disabled: cn(
+                "[&>button]:!text-[#AEB0B6]",
+                "[&>button]:cursor-default",
+                "[&>button]:hover:!bg-transparent",
+              ),
+
               outside: "opacity-100",
             }}
           />

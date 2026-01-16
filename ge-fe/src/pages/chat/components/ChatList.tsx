@@ -335,6 +335,8 @@ export function mapChatRoomToItem(r: ChatRoomListItem): ChatItem {
         return "사진을 보냈습니다";
       case "QUESTION":
         return `${opponentNickname}님을 위한 고민지가 도착했어요.`;
+      case "CONCERN":
+        return `${opponentNickname}님을 위한 고민지가 도착했어요.`;
       case "SOLUTION":
         return `${opponentNickname}님을 위한 솔루션지가 도착했어요.`;
       case "TEXT":
@@ -470,10 +472,9 @@ export function ChatList() {
                 <li key={chat.id}>
                   <button
                     type="button"
-                    className={[
-                      "flex w-full items-center gap-3 rounded-2xl py-3 text-left",
-                      "hover:bg-slate-50 active:bg-slate-100",
-                    ].join(" ")}
+                    className={["flex w-full items-center gap-3 rounded-2xl py-3 text-left"].join(
+                      " ",
+                    )}
                     onClick={() => {
                       const headerMeta: ChatHeaderData = {
                         nickname: chat.name,

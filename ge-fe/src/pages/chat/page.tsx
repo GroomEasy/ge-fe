@@ -120,18 +120,12 @@ import { useLocation, useParams } from "react-router-dom";
 import { useChatRoom } from "@/hooks/useChatRoom";
 import { MessageList } from "./components/MessageList";
 import { MessageInput } from "./components/MessageInput";
-import ChatHeader from "./components/ChatHeader";
-
-type ChatRouteState = {
-  opponentNickname?: string;
-  expertCategory?: string;
-  opponentProfileImage?: string | null;
-};
+import ChatHeader, { type ChatHeaderData } from "./components/ChatHeader";
 
 export function Chat() {
   const params = useParams();
   const location = useLocation();
-  const state = (location.state ?? {}) as ChatRouteState;
+  //const state = (location.state ?? {}) as ChatRouteState;
 
   const chatroomId = useMemo(() => {
     const raw = params.chatroomId;
@@ -144,6 +138,18 @@ export function Chat() {
     roomId: chatroomId,
   });
 
+  type ChatRouteState = {
+    headerMeta?: ChatHeaderData;
+  };
+
+  const headerMetaFromState = (location.state as ChatRouteState | null)?.headerMeta ?? null;
+
+  const headerMeta: ChatHeaderData = headerMetaFromState ?? {
+    nickname: "상대",
+    category: "",
+    profileImageUrl: null,
+  };
+
   if (chatroomId == null) {
     return <div className="p-4 text-sm text-red-500">잘못된 채팅방 ID</div>;
   }
@@ -151,11 +157,12 @@ export function Chat() {
   return (
     <div className="flex h-full w-full flex-col bg-white">
       <ChatHeader
-        meta={{
-          nickname: state.opponentNickname ?? "상대",
-          category: state.expertCategory ?? "",
-          profileImageUrl: state.opponentProfileImage ?? null,
-        }}
+        // meta={{
+        //   nickname: state.opponentNickname ?? "상대",
+        //   category: state.expertCategory ?? "",
+        //   profileImageUrl: state.opponentProfileImage ?? null,
+        // }}
+        meta={headerMeta}
       />
 
       {isLoading && (
@@ -172,7 +179,7 @@ export function Chat() {
       <MessageList
         messages={messages}
         myUserId={myUserId}
-        opponentProfileImage={state.opponentProfileImage ?? null}
+        opponentProfileImage={headerMeta.profileImageUrl ?? null}
       />
       <MessageInput onSend={sendTextMessage} disabled={!isConnected} />
     </div>

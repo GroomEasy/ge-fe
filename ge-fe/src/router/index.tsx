@@ -32,6 +32,8 @@ import ServiceReadyPage from "@/pages/service-ready/page";
 import CategoryBestReviewsPage from "@/pages/category/reviews/page";
 import CategoryExpertListPage from "@/pages/category/experts/page";
 import ReviewWritePage from "@/pages/myPage/review/writeReview";
+import MyReviewPage from "@/pages/myPage/review/myReview";
+import ConcernView from "@/pages/solution/customer/readConcern";
 
 export const router = createBrowserRouter([
   {
@@ -155,7 +157,15 @@ export const router = createBrowserRouter([
     element: <ReviewWritePage />,
   },
   {
+    path: "/myReview",
+    element: <MyReviewPage />,
+  },
+  {
     path: "/service-ready",
     element: <ServiceReadyPage />,
+  },
+  {
+    path: "/concern/:consultationId",
+    element: <ConcernView />,
   },
 ]);

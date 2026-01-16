@@ -225,26 +225,13 @@ export function MultiPhotoPicker({
 
   return (
     <div className="mt-4 flex items-center gap-3">
-      <button
-        type="button"
-        onClick={pick}
-        disabled={isUploading || keys.length >= max}
-        className={cn(
-          "flex h-[108px] w-[108px] flex-col items-center justify-center rounded-[8px] border border-[#e1e2e4] bg-[#fafafa]",
-          "active:bg-neutral-50",
-          (isUploading || keys.length >= max) && "opacity-60",
-        )}
-      >
-        <Camera className="h-6 w-6 text-[#878a93]" fill="#878a93" />
-        <span className="mt-1 pre_cap_reg_14 text-[#878a93]">{countLabel}</span>
-      </button>
-
+      {/* ✅ 1) thumbnails 먼저 (왼쪽부터 채워짐) */}
       {keys.map((k) => {
         const url = previewMap.get(k);
         return (
           <div
             key={k}
-            className="relative h-[74px] w-[74px] overflow-hidden rounded-[12px] bg-neutral-100"
+            className="relative h-[108px] w-[108px] overflow-hidden rounded-[12px] bg-neutral-100"
           >
             {url ? (
               <img src={url} alt="" className="h-full w-full object-cover" />
@@ -257,21 +244,42 @@ export function MultiPhotoPicker({
             <button
               type="button"
               onClick={() => remove(k)}
-              className="absolute right-1 top-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-black/60"
+              className="absolute right-2 top-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#292a2d]"
               aria-label="삭제"
             >
-              <X className="h-4 w-4 text-white" />
+              <X className="h-3 w-3 text-white" />
             </button>
           </div>
         );
       })}
+
+      {/* ✅ 2) camera box는 마지막에 (5장 되면 사라짐 = 마지막 사진이 그 자리 차지) */}
+      {keys.length < max && (
+        <button
+          type="button"
+          onClick={pick}
+          disabled={isUploading}
+          className={cn(
+            "flex h-[108px] w-[108px] flex-col items-center justify-center rounded-[8px] border border-[#e1e2e4] bg-[#fafafa]",
+            "active:bg-neutral-50",
+            isUploading && "opacity-60",
+          )}
+        >
+          {/* ✅ 업로드한 Camera(svg) 그대로 사용 */}
+          <Camera className="h-6 w-6 text-[#878a93]" fill="#878a93" />
+          <span className="mt-1 pre_cap_reg_14 text-[#878a93]">{countLabel}</span>
+        </button>
+      )}
 
       <input
         ref={inputRef}
         type="file"
         accept="image/*"
         className="hidden"
-        onChange={(e) => addFile(e.target.files?.[0] ?? null)}
+        onChange={(e) => {
+          addFile(e.target.files?.[0] ?? null);
+          e.target.value = ""; // ✅ 같은 파일 다시 선택 가능하게(권장)
+        }}
       />
     </div>
   );

@@ -53,8 +53,8 @@
 //   return <Step4Question reservationId={reservationId} onBack={() => goStep(3)} onDone={() => {}} />;
 // }
 
-import { useEffect, useCallback, useMemo } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useEffect, useCallback, useMemo, useLayoutEffect } from "react";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Step1SidePhotos } from "./Step1SidePhotos";
 import { Step2FaceSelect } from "./Step2FaceSelect";
 import { Step3DesiredImage } from "./Step3DesiredImage";
@@ -71,12 +71,21 @@ function clampStep(raw: string | null): Step {
 export function HairSetup() {
   const navigate = useNavigate();
   const [sp, setSp] = useSearchParams();
+  const loc = useLocation();
 
   // ✅ reservationId는 query에서
   const reservationId = useMemo(() => sp.get("reservationId") ?? "", [sp]);
 
   // ✅ step도 query에서
   const step: Step = useMemo(() => clampStep(sp.get("step")), [sp]);
+
+  useLayoutEffect(() => {
+    // 렌더 직후 1프레임 뒤에 올리면 더 안정적
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      (document.scrollingElement ?? document.documentElement).scrollTop = 0;
+    });
+  }, [loc.key, step]); // loc.key만 써도 되는데 step까지 같이 두면 더 명확
 
   // ✅ step만 변경 (reservationId는 유지)
   const goStep = useCallback(
