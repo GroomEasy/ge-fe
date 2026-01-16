@@ -14,7 +14,6 @@ import { Step7BodyFlaws } from "./Step7BodyFlaws";
 import { Step8ItemBudget } from "./Step8ItemBudget";
 import { Step9Purpose } from "./Step9Purpose";
 import { reservationService } from "@/services/reservation.service";
-import { useFashionFlowStore } from "@/stores/useFashionFlowStore";
 
 const createPreview = (file: File) => ({
   id: crypto.randomUUID(),
@@ -35,45 +34,35 @@ export default function FashionFlowPage() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [step, setStep] = React.useState(1);
+  const [introStage, setIntroStage] = React.useState<1 | 2>(1);
   const [frontImage, setFrontImage] = React.useState<OutfitImage | null>(null);
   const [leftImage, setLeftImage] = React.useState<OutfitImage | null>(null);
   const [rightImage, setRightImage] = React.useState<OutfitImage | null>(null);
   const [outfits, setOutfits] = React.useState<OutfitImage[]>([]);
   const [purposeImages, setPurposeImages] = React.useState<OutfitImage[]>([]);
-  const {
-    step,
-    introStage,
-    heightValue,
-    weightValue,
-    topSize,
-    bottomSize,
-    colorSelections,
-    fitSelection,
-    imageStyleSelections,
-    imageStyleEtc,
-    bodySelections,
-    bodyEtc,
-    itemSelections,
-    priceMin,
-    priceMax,
-    purposeText,
-    setStep,
-    setIntroStage,
-    setHeightValue,
-    setWeightValue,
-    setTopSize,
-    setBottomSize,
-    toggleColorSelection,
-    setFitSelection,
-    toggleImageStyleSelection,
-    setImageStyleEtc,
-    toggleBodySelection,
-    setBodyEtc,
-    toggleItemSelection,
-    setPriceMin,
-    setPriceMax,
-    setPurposeText,
-  } = useFashionFlowStore();
+  const [heightValue, setHeightValue] = React.useState("");
+  const [weightValue, setWeightValue] = React.useState("");
+  const [topSize, setTopSize] = React.useState<SizeOption | null>(null);
+  const [bottomSize, setBottomSize] = React.useState<SizeOption | null>(null);
+  const [colorSelections, setColorSelections] = React.useState<Set<string>>(
+    () => new Set(),
+  );
+  const [fitSelection, setFitSelection] = React.useState<string | null>(null);
+  const [imageStyleSelections, setImageStyleSelections] = React.useState<Set<string>>(
+    () => new Set(),
+  );
+  const [imageStyleEtc, setImageStyleEtc] = React.useState("");
+  const [bodySelections, setBodySelections] = React.useState<Set<string>>(
+    () => new Set(),
+  );
+  const [bodyEtc, setBodyEtc] = React.useState("");
+  const [itemSelections, setItemSelections] = React.useState<Set<string>>(
+    () => new Set(),
+  );
+  const [priceMin, setPriceMin] = React.useState(0);
+  const [priceMax, setPriceMax] = React.useState(40);
+  const [purposeText, setPurposeText] = React.useState("");
 
   const reservationIdRaw =
     searchParams.get("reservationId") ??
@@ -93,18 +82,7 @@ export default function FashionFlowPage() {
       setStep(stepParam);
       setIntroStage(1);
     }
-  }, [searchParams, setStep, setIntroStage]);
-
-  const colorSelectionSet = React.useMemo(
-    () => new Set(colorSelections),
-    [colorSelections],
-  );
-  const imageStyleSelectionSet = React.useMemo(
-    () => new Set(imageStyleSelections),
-    [imageStyleSelections],
-  );
-  const bodySelectionSet = React.useMemo(() => new Set(bodySelections), [bodySelections]);
-  const itemSelectionSet = React.useMemo(() => new Set(itemSelections), [itemSelections]);
+  }, [searchParams]);
 
   React.useEffect(() => {
     return () => {
@@ -210,13 +188,13 @@ export default function FashionFlowPage() {
       const hasWeight = Boolean(formatNumeric(weightValue));
       return hasHeight && hasWeight && Boolean(topSize) && Boolean(bottomSize);
     }
-    if (step === 3) return bodySelections.length > 0;
+    if (step === 3) return bodySelections.size > 0;
     if (step === 4) {
       return (
-        colorSelections.length > 0 && Boolean(fitSelection) && imageStyleSelections.length > 0
+        colorSelections.size > 0 && Boolean(fitSelection) && imageStyleSelections.size > 0
       );
     }
-    if (step === 5) return itemSelections.length > 0;
+    if (step === 5) return itemSelections.size > 0;
     if (step === 6) return purposeText.trim().length > 0;
     return false;
   };
@@ -271,9 +249,9 @@ export default function FashionFlowPage() {
         ),
       );
 
-      const bodyTypeDisadvantages = bodySelections.map(mapBodyType);
-      const styleColors = colorSelections;
-      const styleImages = imageStyleSelections;
+      const bodyTypeDisadvantages = Array.from(bodySelections).map(mapBodyType);
+      const styleColors = Array.from(colorSelections);
+      const styleImages = Array.from(imageStyleSelections);
 
       await reservationService.updateFashionConcern(reservationId, {
         fashion: {
@@ -287,7 +265,7 @@ export default function FashionFlowPage() {
           styleFits: fitSelection ? [fitSelection] : [],
           styleImages,
           styleEtcText: imageStyleEtc.trim() ? imageStyleEtc : undefined,
-          outfitItems: itemSelections,
+          outfitItems: Array.from(itemSelections),
           outfitPriceRange: {
             minPrice: priceMin * 10000,
             maxPrice: priceMax * 10000,
@@ -410,8 +388,8 @@ export default function FashionFlowPage() {
           <Step4BodySize
             heightValue={heightValue}
             weightValue={weightValue}
-            topSize={topSize as SizeOption | null}
-            bottomSize={bottomSize as SizeOption | null}
+            topSize={topSize}
+            bottomSize={bottomSize}
             onHeightChange={(value) => setHeightValue(formatNumeric(value))}
             onHeightBlur={() => setHeightValue((prev) => applyUnit(prev, "cm"))}
             onHeightFocus={() => setHeightValue((prev) => formatNumeric(prev))}
@@ -419,37 +397,41 @@ export default function FashionFlowPage() {
             onWeightBlur={() => setWeightValue((prev) => applyUnit(prev, "kg"))}
             onWeightFocus={() => setWeightValue((prev) => formatNumeric(prev))}
             onTopSizeChange={(value) =>
-              setTopSize(topSize === value ? null : value)
+              setTopSize((prev) => (prev === value ? null : value))
             }
             onBottomSizeChange={(value) =>
-              setBottomSize(bottomSize === value ? null : value)
+              setBottomSize((prev) => (prev === value ? null : value))
             }
           />
         )}
         {step === 3 && (
           <Step7BodyFlaws
-            selections={bodySelectionSet}
-            onToggle={toggleBodySelection}
+            selections={bodySelections}
+            onToggle={(option) => toggleSetValue(option, setBodySelections)}
             etcValue={bodyEtc}
             onEtcChange={setBodyEtc}
           />
         )}
         {step === 4 && (
           <Step6StylePreference
-            colorSelections={colorSelectionSet}
+            colorSelections={colorSelections}
             fitSelection={fitSelection}
-            imageStyleSelections={imageStyleSelectionSet}
+            imageStyleSelections={imageStyleSelections}
             imageStyleEtc={imageStyleEtc}
-            onToggleColor={toggleColorSelection}
-            onFitChange={(value) => setFitSelection(fitSelection === value ? null : value)}
-            onToggleImageStyle={toggleImageStyleSelection}
+            onToggleColor={(option) => toggleSetValue(option, setColorSelections)}
+            onFitChange={(value) =>
+              setFitSelection((prev) => (prev === value ? null : value))
+            }
+            onToggleImageStyle={(option) =>
+              toggleSetValue(option, setImageStyleSelections)
+            }
             onImageStyleEtcChange={setImageStyleEtc}
           />
         )}
         {step === 5 && (
           <Step8ItemBudget
-            selections={itemSelectionSet}
-            onToggle={toggleItemSelection}
+            selections={itemSelections}
+            onToggle={(option) => toggleSetValue(option, setItemSelections)}
             priceMin={priceMin}
             priceMax={priceMax}
             minPercent={minPercent}
@@ -483,3 +465,17 @@ export default function FashionFlowPage() {
     </div>
   );
 }
+  const toggleSetValue = (
+    value: string,
+    setter: React.Dispatch<React.SetStateAction<Set<string>>>,
+  ) => {
+    setter((prev) => {
+      const next = new Set(prev);
+      if (next.has(value)) {
+        next.delete(value);
+      } else {
+        next.add(value);
+      }
+      return next;
+    });
+  };
