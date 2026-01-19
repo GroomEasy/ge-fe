@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   CheckCircle2,
@@ -9,11 +9,17 @@ import {
   Instagram,
   Star,
 } from 'lucide-react';
+import type { AxiosError } from 'axios';
 import heartIcon from '../../../images/mypage/heart.svg';
-import { portfolioItems } from './portfolio-data';
+import redHeartIcon from '../../../images/redHeart.svg';
+import { portfolioItems, type PortfolioItem } from './portfolio-data';
 import { expertService } from '../../../services/expert.service';
 import { reviewService } from '../../../services/review.service';
-import type { ExpertInfoResponse, ExpertScheduleResponse } from '../../../lib/api/types';
+import type {
+  ExpertInfoResponse,
+  ExpertPortfolioResponse,
+  ExpertScheduleResponse,
+} from '../../../lib/api/types';
 import {
   getLabelFromApiCategory,
   getRouteCategoryFromApi,
@@ -33,6 +39,16 @@ type RelatedExpert = {
   summary: string;
 };
 
+const mapPortfolioResponse = (portfolio: ExpertPortfolioResponse): PortfolioItem => ({
+  id: portfolio.id,
+  title: portfolio.title,
+  tags: portfolio.hashtags ?? [],
+  concern: portfolio.concern,
+  solution: portfolio.solution,
+  beforeImage: portfolio.beforeImage,
+  afterImage: portfolio.afterImage,
+});
+
 const ExpertInfoPage = () => {
   const navigate = useNavigate();
   const { expertId } = useParams();
@@ -44,8 +60,13 @@ const ExpertInfoPage = () => {
   const [reviewCards, setReviewCards] = useState<ReviewCard[]>([]);
   const [reviewAverage, setReviewAverage] = useState(0);
   const [expertSchedules, setExpertSchedules] = useState<ExpertScheduleResponse[]>([]);
-
-  const portfolioCards = portfolioItems;
+  const [portfolioCards, setPortfolioCards] = useState<PortfolioItem[]>([]);
+  const [portfolioPage, setPortfolioPage] = useState(0);
+  const [portfolioHasMore, setPortfolioHasMore] = useState(true);
+  const [portfolioLoading, setPortfolioLoading] = useState(false);
+  const portfolioListRef = useRef<HTMLDivElement | null>(null);
+  const portfolioSentinelRef = useRef<HTMLDivElement | null>(null);
+  const portfolioFetchingRef = useRef(false);
 
   const relatedExperts: RelatedExpert[] = [
     {
@@ -72,6 +93,10 @@ const ExpertInfoPage = () => {
       return;
     }
 
+    setPortfolioCards([]);
+    setPortfolioPage(0);
+    setPortfolioHasMore(true);
+
     let isActive = true;
 
     const fetchExpertInfo = async () => {
@@ -84,6 +109,19 @@ const ExpertInfoPage = () => {
         setLikesCount(response.data.likes ?? 0);
       } catch (error) {
         console.error('Failed to fetch expert info:', error);
+      }
+    };
+
+    const fetchLikeStatus = async () => {
+      try {
+        const response = await expertService.getLikedExperts({ page: 0, size: 100 });
+        if (!isActive) {
+          return;
+        }
+        const matched = response.data.some((expert) => expert.expertId === expertIdNumber);
+        setIsLiked(matched);
+      } catch (error) {
+        console.error('Failed to fetch liked experts:', error);
       }
     };
 
@@ -100,12 +138,78 @@ const ExpertInfoPage = () => {
     };
 
     fetchExpertInfo();
+    fetchLikeStatus();
     fetchExpertSchedules();
 
     return () => {
       isActive = false;
     };
   }, [expertIdNumber]);
+
+  useEffect(() => {
+    if (!expertIdNumber || !portfolioHasMore || portfolioFetchingRef.current) {
+      return;
+    }
+
+    let isActive = true;
+    const fetchExpertPortfolios = async () => {
+      try {
+        portfolioFetchingRef.current = true;
+        setPortfolioLoading(true);
+        const response = await expertService.getExpertPortfolios(expertIdNumber, {
+          page: portfolioPage,
+          size: 3,
+        });
+        if (!isActive) {
+          return;
+        }
+        const mapped = response.data.map(mapPortfolioResponse);
+        setPortfolioCards((prev) => (portfolioPage === 0 ? mapped : [...prev, ...mapped]));
+        setPortfolioHasMore(mapped.length === 3);
+      } catch (error) {
+        console.error('Failed to fetch expert portfolios:', error);
+        if (!isActive) {
+          return;
+        }
+        if (portfolioPage === 0) {
+          setPortfolioCards(portfolioItems);
+        }
+        setPortfolioHasMore(false);
+      } finally {
+        if (isActive) {
+          setPortfolioLoading(false);
+          portfolioFetchingRef.current = false;
+        }
+      }
+    };
+
+    fetchExpertPortfolios();
+
+    return () => {
+      isActive = false;
+    };
+  }, [expertIdNumber, portfolioHasMore, portfolioPage]);
+
+  useEffect(() => {
+    const container = portfolioListRef.current;
+    const sentinel = portfolioSentinelRef.current;
+    if (!container || !sentinel || !portfolioHasMore) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const firstEntry = entries[0];
+        if (firstEntry?.isIntersecting && !portfolioLoading && portfolioHasMore) {
+          setPortfolioPage((prev) => prev + 1);
+        }
+      },
+      { root: container, rootMargin: '100px' },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [portfolioHasMore, portfolioLoading]);
 
   useEffect(() => {
     if (!expertInfo?.category) {
@@ -164,6 +268,23 @@ const ExpertInfoPage = () => {
       setLikesCount((prev) => prev + 1);
       setIsLiked(true);
     } catch (error) {
+      const status = (error as AxiosError)?.response?.status;
+      if (status === 409) {
+        try {
+          const [likedResponse, infoResponse] = await Promise.all([
+            expertService.getLikedExperts({ page: 0, size: 100 }),
+            expertService.getExpertInfo(expertIdNumber),
+          ]);
+          const matched = likedResponse.data.some(
+            (expert) => expert.expertId === expertIdNumber,
+          );
+          setIsLiked(matched);
+          setLikesCount(infoResponse.data.likes ?? 0);
+        } catch (innerError) {
+          console.error('Failed to refresh like status:', innerError);
+        }
+        return;
+      }
       console.error('Failed to toggle like:', error);
     }
   };
@@ -177,23 +298,26 @@ const ExpertInfoPage = () => {
   const hasReviews = reviewCards.length > 0;
   const reviewSectionHeight = hasReviews ? 216 : 72;
   const reviewSectionOffset = hasReviews ? 0 : -(216 - reviewSectionHeight);
+  const hasPortfolios = portfolioCards.length > 0;
+  const portfolioSectionHeight = hasPortfolios ? 610 : 72;
+  const portfolioSectionOffset = hasPortfolios ? 0 : -(610 - portfolioSectionHeight);
   const layoutTops = {
     reviewDivider: 771,
     reviewSection: 779,
     portfolioDivider: 1003 + reviewSectionOffset,
     portfolioSection: 1011 + reviewSectionOffset,
-    consultationSection: 1621 + reviewSectionOffset,
+    consultationSection: 1621 + reviewSectionOffset + portfolioSectionOffset,
   };
   const consultationCopy = {
     VIDEO: {
       title: '실시간 화상 상담',
       description:
-        '전문가와 화상으로 15분 상담을 진행합니다. 상담한 내용을 바탕으로 전문가가 작성한 솔루션지는 상담이 끝나고 한 시간 내로 전송해드립니다.',
+        '전문가와 화상으로 30분 상담을 진행합니다. 상담한 내용을 바탕으로 전문가가 작성한 솔루션지는 상담이 끝나고 24시간 내로 전송해드립니다.',
     },
     MESSAGE: {
       title: '메세지 상담',
       description:
-        '상담 신청 시 진행되는 설문조사 답변을 바탕으로 전문가가 24시간 내로 솔루션지를 보내드립니다. 솔루션지를 읽고 생기는 추가 질문은 채팅을 통해 한 번 더 문의할 수 있습니다.',
+        '상담 신청 시 작성한 고민 설문지를 토대로 전문가가 24시간 내에 솔루션지를 전송해드립니다. 솔루션지를 읽고 생기는 추가 질문은 채팅을 통해 일주일 동안 질문할 수 있습니다.',
     },
   } as const;
   const formatPrice = (value: number) => `${value.toLocaleString('ko-KR')}원`;
@@ -240,7 +364,11 @@ const ExpertInfoPage = () => {
                 onClick={handleToggleLike}
                 className="flex flex-col items-center gap-[2px]"
               >
-                <img src={heartIcon} alt="찜" className="h-[24px] w-[24px]" />
+                <img
+                  src={isLiked ? redHeartIcon : heartIcon}
+                  alt="찜"
+                  className="h-[24px] w-[24px]"
+                />
                 <span className="text-[13px] text-[#878a93]">{likesCount}</span>
               </button>
             </div>
@@ -354,8 +482,8 @@ const ExpertInfoPage = () => {
           />
 
           <div
-            className="absolute left-0 h-[610px] w-[375px] bg-white"
-            style={{ top: layoutTops.portfolioSection }}
+            className="absolute left-0 w-[375px] bg-white"
+            style={{ top: layoutTops.portfolioSection, height: portfolioSectionHeight }}
           >
             <div className="absolute left-[15px] top-[40px] flex w-[343px] items-center justify-between">
               <h2 className="text-[18px] font-semibold text-[#0f0f10]">포트폴리오</h2>
@@ -367,55 +495,82 @@ const ExpertInfoPage = () => {
                 <ChevronRight className="h-[24px] w-[24px]" />
               </button>
             </div>
-            <div className="absolute left-[16px] top-[86px] flex w-[343px] gap-[12px] overflow-x-auto scrollbar-hide">
-              {portfolioCards.map((card) => (
-                <article
-                  key={card.id}
-                  className="h-[439px] w-[322px] shrink-0 rounded-[12px] border border-[#e1e2e4] bg-white p-[20px]"
+            {hasPortfolios && (
+              <>
+                <div
+                  ref={portfolioListRef}
+                  className="absolute left-[16px] top-[86px] flex w-[343px] gap-[12px] overflow-x-auto scrollbar-hide"
                 >
-                  <p className="text-[16px] font-semibold leading-[1.4] text-[#292a2d]">
-                    {card.title}
-                  </p>
-                  <div className="mt-[12px] flex gap-[8px]">
-                    <div className="relative h-[130px] w-[130px] overflow-hidden rounded-[12px] bg-[#e1e2e4]">
-                      <span className="absolute bottom-[8px] left-[8px] rounded-[4px] bg-black/40 px-[6px] py-[2px] text-[14px] text-white">
-                        전
-                      </span>
-                    </div>
-                    <div className="relative h-[130px] w-[130px] overflow-hidden rounded-[12px] bg-[#e1e2e4]">
-                      <span className="absolute bottom-[8px] right-[8px] rounded-[4px] bg-black/40 px-[6px] py-[2px] text-[14px] text-white">
-                        후
-                      </span>
-                    </div>
-                  </div>
-                  <div className="mt-[17px] flex gap-[8px] overflow-hidden">
-                    {card.tags.map((tag, index) => (
-                      <span
-                        key={`${card.id}-${tag}-${index}`}
-                        className="rounded-[2px] bg-[#f4f4f5] px-[6px] py-[4px] text-[12px] text-[#46474c]"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="mt-[16px] space-y-[6px]">
-                    <p className="text-[14px] font-semibold text-[#292a2d]">고객의 고민</p>
-                    <p className="line-clamp-3 text-[13px] leading-[1.4] text-[#505158]">
-                      {card.concern}
-                    </p>
-                  </div>
-                  <div className="mt-[16px] space-y-[6px]">
-                    <p className="text-[14px] font-semibold text-[#292a2d]">솔루션</p>
-                    <p className="line-clamp-3 text-[13px] leading-[1.4] text-[#505158]">
-                      {card.solution}
-                    </p>
-                  </div>
-                </article>
-              ))}
-            </div>
-            <div className="absolute left-1/2 top-[551px] h-[3px] w-[55px] -translate-x-1/2 bg-[#e1e2e4]">
-              <div className="h-[3px] w-[18px] bg-[#429ff0]" />
-            </div>
+                  {portfolioCards.map((card) => (
+                    <article
+                      key={card.id}
+                      className="h-[439px] w-[322px] shrink-0 rounded-[12px] border border-[#e1e2e4] bg-white p-[20px]"
+                    >
+                      <p className="text-[16px] font-semibold leading-[1.4] text-[#292a2d]">
+                        {card.title}
+                      </p>
+                      <div className="mt-[12px] flex gap-[8px]">
+                        <div className="relative h-[130px] w-[130px] overflow-hidden rounded-[12px] bg-[#e1e2e4]">
+                          {card.beforeImage && (
+                            <img
+                              src={card.beforeImage}
+                              alt=""
+                              className="h-full w-full object-cover"
+                            />
+                          )}
+                          <span className="absolute bottom-[8px] left-[8px] rounded-[4px] bg-black/40 px-[6px] py-[2px] text-[14px] text-white">
+                            전
+                          </span>
+                        </div>
+                        <div className="relative h-[130px] w-[130px] overflow-hidden rounded-[12px] bg-[#e1e2e4]">
+                          {card.afterImage && (
+                            <img
+                              src={card.afterImage}
+                              alt=""
+                              className="h-full w-full object-cover"
+                            />
+                          )}
+                          <span className="absolute bottom-[8px] right-[8px] rounded-[4px] bg-black/40 px-[6px] py-[2px] text-[14px] text-white">
+                            후
+                          </span>
+                        </div>
+                      </div>
+                      <div className="mt-[17px] flex gap-[8px] overflow-hidden">
+                        {card.tags.map((tag, index) => (
+                          <span
+                            key={`${card.id}-${tag}-${index}`}
+                            className="rounded-[2px] bg-[#f4f4f5] px-[6px] py-[4px] text-[12px] text-[#46474c]"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="mt-[16px] space-y-[6px]">
+                        <p className="text-[14px] font-semibold text-[#292a2d]">고객의 고민</p>
+                        <p className="line-clamp-3 text-[13px] leading-[1.4] text-[#505158]">
+                          {card.concern}
+                        </p>
+                      </div>
+                      <div className="mt-[16px] space-y-[6px]">
+                        <p className="text-[14px] font-semibold text-[#292a2d]">솔루션</p>
+                        <p className="line-clamp-3 text-[13px] leading-[1.4] text-[#505158]">
+                          {card.solution}
+                        </p>
+                      </div>
+                    </article>
+                  ))}
+                  {portfolioHasMore && (
+                    <div
+                      ref={portfolioSentinelRef}
+                      className="h-[1px] w-[1px] shrink-0"
+                    />
+                  )}
+                </div>
+                <div className="absolute left-1/2 top-[551px] h-[3px] w-[55px] -translate-x-1/2 bg-[#e1e2e4]">
+                  <div className="h-[3px] w-[18px] bg-[#429ff0]" />
+                </div>
+              </>
+            )}
           </div>
 
           <div className="absolute left-0 w-[375px]" style={{ top: layoutTops.consultationSection }}>

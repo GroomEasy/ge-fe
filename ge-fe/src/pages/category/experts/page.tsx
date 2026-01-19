@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Check, ChevronDown, ChevronLeft, X } from "lucide-react";
 import ExpertListCard, { type ExpertListCardData } from "@/components/expert/expert-list-card";
 import ConsultationMethodSheet from "@/pages/resevationFlow/reservationSheet/typeReservation";
@@ -7,6 +7,7 @@ import DateTimeBottomSheet from "@/pages/resevationFlow/reservationSheet/calenda
 import { expertService } from "@/services/expert.service";
 import { reservationService } from "@/services/reservation.service";
 import { getApiCategoryFromRoute, getLabelFromApiCategory, type ApiCategory } from "@/lib/utils/category";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 const CUT_STYLE_OPTIONS = [
   "가일 컷",
@@ -103,6 +104,7 @@ const filterExperts = (
 
 export default function CategoryExpertListPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const params = useParams();
   const categoryKey = params.category ?? "hair";
   const apiCategory = getApiCategoryFromRoute(categoryKey);
@@ -110,6 +112,8 @@ export default function CategoryExpertListPage() {
     () => getLabelFromApiCategory(apiCategory) || "전문가",
     [apiCategory],
   );
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const initializeAuth = useAuthStore((state) => state.initializeAuth);
   const [experts, setExperts] = useState<ExpertListItem[]>([]);
   const [noticeMessage, setNoticeMessage] = useState<string | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -126,6 +130,18 @@ export default function CategoryExpertListPage() {
   const [selectedReservationExpertId, setSelectedReservationExpertId] = useState<number | null>(
     null,
   );
+
+  useEffect(() => {
+    initializeAuth();
+  }, [initializeAuth]);
+
+  useEffect(() => {
+    const state = location.state as { openCalendarSheet?: boolean } | null;
+    if (state?.openCalendarSheet) {
+      setOpenCalendarSheet(true);
+      navigate(location.pathname, { replace: true, state: null });
+    }
+  }, [location.pathname, location.state, navigate]);
 
   useEffect(() => {
     let isActive = true;
@@ -214,6 +230,9 @@ export default function CategoryExpertListPage() {
     if (categoryKey === "fashion") {
       return "/reservation/fashion";
     }
+    if (categoryKey !== "hair") {
+      return "/service-ready";
+    }
     return "/hair/setup";
   };
 
@@ -249,6 +268,11 @@ export default function CategoryExpertListPage() {
     }
     const price = matched.price;
     const category = categoryKey === "fashion" ? "FASHION" : "HAIR";
+    const selectedExpert = experts.find((expert) => expert.id === selectedReservationExpertId);
+    sessionStorage.setItem("consult_expert_name", selectedExpert?.name ?? "전문가");
+    sessionStorage.setItem("consult_category_label", categoryLabel);
+    sessionStorage.setItem("consult_price", String(price));
+    sessionStorage.setItem("consult_expert_id", String(selectedReservationExpertId));
 
     const response = await reservationService.createTempReservation({
       expertId: selectedReservationExpertId,
@@ -258,6 +282,7 @@ export default function CategoryExpertListPage() {
       price,
     });
 
+    sessionStorage.setItem("consult_reservation_id", String(response.data.reservationId));
     return response.data.reservationId;
   };
 
@@ -305,6 +330,10 @@ export default function CategoryExpertListPage() {
   const handleReservationSchedule = (expertId: number) => {
     if (categoryKey !== "hair" && categoryKey !== "fashion") {
       setNoticeMessage("해당 카테고리는 상담 예약이 준비 중입니다.");
+      return;
+    }
+    if (!isAuthenticated) {
+      navigate("/auth/login");
       return;
     }
     setSelectedReservationExpertId(expertId);
@@ -540,6 +569,7 @@ export default function CategoryExpertListPage() {
         onNext={async ({ date, timeId }) => {
           sessionStorage.setItem("consult_schedule_label", formatScheduleLabel(date, timeId));
           setOpenCalendarSheet(false);
+          sessionStorage.setItem("consult_return_path", `${location.pathname}${location.search}`);
           if (categoryKey === "fashion" || categoryKey === "hair") {
             const reservationId = await handleTempReservation(date, timeId);
             if (reservationId) {

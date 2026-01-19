@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import Footer from "./component/Footer";
 import TopNav from "./component/TopNav";
 import { PRICE_MAX, SIZE_OPTIONS } from "./constants";
-import { uploadImageViaPresignV2 } from "@/lib/s3Upload";
+import { uploadImageViaPresign } from "@/api/s3forFlow";
 import type { OutfitImage } from "./types";
 import { Step1Guide } from "./Step1Guide";
 import { Step2SidePhotos } from "./Step2SidePhotos";
@@ -35,11 +35,12 @@ export default function FashionFlowPage() {
   const [searchParams] = useSearchParams();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [step, setStep] = React.useState(1);
-  const [introStage, setIntroStage] = React.useState<1 | 2>(1);
+  const [introStage] = React.useState<1 | 2>(2);
   const [frontImage, setFrontImage] = React.useState<OutfitImage | null>(null);
   const [leftImage, setLeftImage] = React.useState<OutfitImage | null>(null);
   const [rightImage, setRightImage] = React.useState<OutfitImage | null>(null);
   const [outfits, setOutfits] = React.useState<OutfitImage[]>([]);
+  const [purposeImages, setPurposeImages] = React.useState<OutfitImage[]>([]);
   const [heightValue, setHeightValue] = React.useState("");
   const [weightValue, setWeightValue] = React.useState("");
   const [topSize, setTopSize] = React.useState<SizeOption | null>(null);
@@ -62,13 +63,16 @@ export default function FashionFlowPage() {
   const [priceMin, setPriceMin] = React.useState(0);
   const [priceMax, setPriceMax] = React.useState(40);
   const [purposeText, setPurposeText] = React.useState("");
-  const [purposeImages, setPurposeImages] = React.useState<OutfitImage[]>([]);
 
   const reservationIdRaw =
     searchParams.get("reservationId") ??
     searchParams.get("reservation_id") ??
-    (location.state as { reservationId?: number } | null)?.reservationId;
+    (location.state as { reservationId?: number } | null)?.reservationId ??
+    sessionStorage.getItem("consult_reservation_id");
   const reservationId = reservationIdRaw ? Number(reservationIdRaw) : null;
+  const paymentOrderPath = reservationId
+    ? `/payment/order?reservationId=${reservationId}`
+    : "/payment/order";
 
   const frontInputRef = React.useRef<HTMLInputElement | null>(null);
   const leftInputRef = React.useRef<HTMLInputElement | null>(null);
@@ -80,7 +84,6 @@ export default function FashionFlowPage() {
     const stepParam = Number(searchParams.get("step"));
     if (!Number.isNaN(stepParam) && stepParam >= 1 && stepParam <= 6) {
       setStep(stepParam);
-      setIntroStage(1);
     }
   }, [searchParams]);
 
@@ -97,22 +100,84 @@ export default function FashionFlowPage() {
   const handleSingleUpload = (
     files: FileList | null,
     setter: React.Dispatch<React.SetStateAction<OutfitImage | null>>,
+    imageType: string,
   ) => {
     const file = files?.[0];
     if (!file) return;
+    if (!reservationId) {
+      window.alert("예약 ID가 없습니다. 다시 시도해주세요.");
+      return;
+    }
+    const preview = { ...createPreview(file), isUploading: true };
     setter((prev) => {
       releasePreview(prev);
-      return createPreview(file);
+      return preview;
     });
+    uploadImageViaPresign({
+      file,
+      resourceType: "consultation",
+      resourceId: reservationId,
+      imageType,
+    })
+      .then(({ key }) => {
+        setter((prev) => {
+          if (!prev || prev.id !== preview.id) return prev;
+          return { ...prev, key, isUploading: false };
+        });
+      })
+      .catch((error) => {
+        console.error(error);
+        window.alert("업로드에 실패했어요. 다시 시도해주세요.");
+        setter((prev) => {
+          if (!prev || prev.id !== preview.id) return prev;
+          releasePreview(prev);
+          return null;
+        });
+      });
   };
 
   const handleOutfitUpload = (files: FileList | null) => {
     if (!files?.length) return;
+    if (!reservationId) {
+      window.alert("예약 ID가 없습니다. 다시 시도해주세요.");
+      return;
+    }
     setOutfits((prev) => {
+      if (prev.length >= 5) {
+        window.alert("최대 5장까지 업로드 가능합니다.");
+        return prev;
+      }
       const remainingSlots = Math.max(0, 5 - prev.length);
+      if (files.length > remainingSlots) {
+        window.alert("최대 5장까지 업로드 가능합니다.");
+      }
       const next = Array.from(files)
         .slice(0, remainingSlots)
-        .map(createPreview);
+        .map((file) => ({ ...createPreview(file), isUploading: true }));
+      next.forEach((item) => {
+        uploadImageViaPresign({
+          file: item.file as File,
+          resourceType: "consultation",
+          resourceId: reservationId,
+          imageType: "favorite",
+        })
+          .then(({ key }) => {
+            setOutfits((current) =>
+              current.map((entry) =>
+                entry.id === item.id ? { ...entry, key, isUploading: false } : entry,
+              ),
+            );
+          })
+          .catch((error) => {
+            console.error(error);
+            window.alert("업로드에 실패했어요. 다시 시도해주세요.");
+            setOutfits((current) => {
+              const target = current.find((entry) => entry.id === item.id);
+              releasePreview(target ?? null);
+              return current.filter((entry) => entry.id !== item.id);
+            });
+          });
+      });
       return [...prev, ...next];
     });
   };
@@ -142,18 +207,6 @@ export default function FashionFlowPage() {
     return unit === "cm" ? `${numeric} cm` : `${numeric}kg`;
   };
 
-  const toggleSetValue = (value: string, setter: React.Dispatch<React.SetStateAction<Set<string>>>) => {
-    setter((prev) => {
-      const next = new Set(prev);
-      if (next.has(value)) {
-        next.delete(value);
-      } else {
-        next.add(value);
-      }
-      return next;
-    });
-  };
-
   const formatPrice = (value: number) => {
     if (value >= PRICE_MAX) return "40만원 이상";
     if (value === 0) return "0원";
@@ -172,11 +225,39 @@ export default function FashionFlowPage() {
 
   const handlePurposeUpload = (files: FileList | null) => {
     if (!files?.length) return;
+    if (!reservationId) {
+      window.alert("예약 ID가 없습니다. 다시 시도해주세요.");
+      return;
+    }
     setPurposeImages((prev) => {
       const remainingSlots = Math.max(0, 3 - prev.length);
       const next = Array.from(files)
         .slice(0, remainingSlots)
-        .map(createPreview);
+        .map((file) => ({ ...createPreview(file), isUploading: true }));
+      next.forEach((item) => {
+        uploadImageViaPresign({
+          file: item.file as File,
+          resourceType: "consultation",
+          resourceId: reservationId,
+          imageType: "purpose",
+        })
+          .then(({ key }) => {
+            setPurposeImages((current) =>
+              current.map((entry) =>
+                entry.id === item.id ? { ...entry, key, isUploading: false } : entry,
+              ),
+            );
+          })
+          .catch((error) => {
+            console.error(error);
+            window.alert("업로드에 실패했어요. 다시 시도해주세요.");
+            setPurposeImages((current) => {
+              const target = current.find((entry) => entry.id === item.id);
+              releasePreview(target ?? null);
+              return current.filter((entry) => entry.id !== item.id);
+            });
+          });
+      });
       return [...prev, ...next];
     });
   };
@@ -191,9 +272,13 @@ export default function FashionFlowPage() {
 
   const canProceed = () => {
     if (step === 1) {
-      return introStage === 1
-        ? true
-        : Boolean(frontImage && leftImage && rightImage && outfits.length >= 2);
+      const hasMinimumOutfits = outfits.length >= 2;
+      const hasRequiredKeys =
+        Boolean(frontImage?.key) &&
+        Boolean(leftImage?.key) &&
+        Boolean(rightImage?.key) &&
+        outfits.every((item) => item.key);
+      return hasMinimumOutfits && hasRequiredKeys;
     }
     if (step === 2) {
       const hasHeight = Boolean(formatNumeric(heightValue));
@@ -226,40 +311,23 @@ export default function FashionFlowPage() {
     return map[value] ?? value;
   };
 
-  const uploadFashionImage = async (file: File, imageType: string) => {
-    const { key } = await uploadImageViaPresignV2({
-      file,
-      resourceType: "consultation",
-      imageType,
-    });
-    return key;
-  };
-
   const submitFashionConcern = async () => {
     if (!reservationId) {
       window.alert("예약 ID가 없습니다. 다시 시도해주세요.");
       return false;
     }
-    if (!frontImage || !leftImage || !rightImage) return false;
+    if (!frontImage?.key || !leftImage?.key || !rightImage?.key) return false;
 
     setIsSubmitting(true);
 
     try {
-      const [frontKey, leftKey, rightKey] = await Promise.all([
-        uploadFashionImage(frontImage.file, "frontFullBody"),
-        uploadFashionImage(leftImage.file, "leftFullBody"),
-        uploadFashionImage(rightImage.file, "rightFullBody"),
-      ]);
-
-      const favoriteKeys = await Promise.all(
-        outfits.map((item) => uploadFashionImage(item.file, "favoriteOutfit")),
-      );
-
-      const consultationKeys = await Promise.all(
-        purposeImages.map((item) =>
-          uploadFashionImage(item.file, "consultationPurpose"),
-        ),
-      );
+      const frontKey = frontImage.key;
+      const leftKey = leftImage.key;
+      const rightKey = rightImage.key;
+      const favoriteKeys = outfits.map((item) => item.key).filter(Boolean) as string[];
+      const consultationKeys = purposeImages
+        .map((item) => item.key)
+        .filter(Boolean) as string[];
 
       const bodyTypeDisadvantages = Array.from(bodySelections).map(mapBodyType);
       const styleColors = Array.from(colorSelections);
@@ -283,11 +351,11 @@ export default function FashionFlowPage() {
             maxPrice: priceMax * 10000,
           },
           images: {
-            frontFullBody: [frontKey],
-            leftFullBody: [leftKey],
-            rightFullBody: [rightKey],
-            favoriteOutfit: favoriteKeys,
-            consultationPurpose: consultationKeys.length ? consultationKeys : undefined,
+            front: [frontKey],
+            left: [leftKey],
+            right: [rightKey],
+            favorite: favoriteKeys,
+            purpose: consultationKeys.length ? consultationKeys : undefined,
           },
         },
       });
@@ -302,21 +370,30 @@ export default function FashionFlowPage() {
   };
 
   const handleNext = async () => {
-    if (!canProceed()) return;
-    if (step === 1 && introStage === 1) {
-      setIntroStage(2);
+    if (!canProceed()) {
+      if (step === 1 && introStage === 2 && outfits.length < 2) {
+        window.alert("사진을 최소 2장 이상 업로드해 주세요.");
+        return;
+      }
+      if (
+        step === 1 &&
+        introStage === 2 &&
+        (!frontImage?.key ||
+          !leftImage?.key ||
+          !rightImage?.key ||
+          outfits.some((item) => !item.key))
+      ) {
+        window.alert("사진 업로드가 완료되지 않았어요. 잠시만 기다려주세요.");
+      }
       return;
     }
     if (step < 6) {
       setStep((prev) => prev + 1);
-      if (step === 1) {
-        setIntroStage(1);
-      }
       return;
     }
     const submitted = await submitFashionConcern();
     if (!submitted) return;
-    navigate("/payment/order", {
+    navigate(paymentOrderPath, {
       state: {
         from: `${location.pathname}${location.search}`,
         category: "패션",
@@ -326,32 +403,31 @@ export default function FashionFlowPage() {
   };
 
   const handlePreviewNext = () => {
-    if (step === 1 && introStage === 1) {
-      setIntroStage(2);
-      return;
-    }
     if (step < 6) {
       setStep((prev) => prev + 1);
-      if (step === 1) {
-        setIntroStage(1);
-      }
       return;
     }
-    navigate("/payment/order", { state: { category: "패션", step: 6 } });
+    navigate(paymentOrderPath, {
+      state: {
+        from: `${location.pathname}${location.search}`,
+        category: "패션",
+        step: 6,
+      },
+    });
   };
 
   const handleBack = () => {
     if (step === 1) {
-      if (introStage === 2) {
-        setIntroStage(1);
-        return;
+      const returnPath = sessionStorage.getItem("consult_return_path");
+      if (returnPath) {
+        navigate(returnPath, { state: { openCalendarSheet: true } });
+      } else {
+        navigate("/", { state: { openCalendarSheet: true } });
       }
-      navigate(-1);
       return;
     }
     if (step === 2) {
       setStep(1);
-      setIntroStage(2);
       return;
     }
     setStep((prev) => prev - 1);
@@ -372,7 +448,7 @@ export default function FashionFlowPage() {
               frontImage={frontImage}
               frontInputRef={frontInputRef}
               onRemoveFront={() => removeSingleImage(setFrontImage)}
-              onUploadFront={(files) => handleSingleUpload(files, setFrontImage)}
+              onUploadFront={(files) => handleSingleUpload(files, setFrontImage, "front")}
             />
             {introStage === 2 && (
               <>
@@ -383,8 +459,8 @@ export default function FashionFlowPage() {
                   rightInputRef={rightInputRef}
                   onRemoveLeft={() => removeSingleImage(setLeftImage)}
                   onRemoveRight={() => removeSingleImage(setRightImage)}
-                  onUploadLeft={(files) => handleSingleUpload(files, setLeftImage)}
-                  onUploadRight={(files) => handleSingleUpload(files, setRightImage)}
+                  onUploadLeft={(files) => handleSingleUpload(files, setLeftImage, "left")}
+                  onUploadRight={(files) => handleSingleUpload(files, setRightImage, "right")}
                 />
                 <Step3OutfitPhotos
                   outfits={outfits}
@@ -477,3 +553,17 @@ export default function FashionFlowPage() {
     </div>
   );
 }
+  const toggleSetValue = (
+    value: string,
+    setter: React.Dispatch<React.SetStateAction<Set<string>>>,
+  ) => {
+    setter((prev) => {
+      const next = new Set(prev);
+      if (next.has(value)) {
+        next.delete(value);
+      } else {
+        next.add(value);
+      }
+      return next;
+    });
+  };

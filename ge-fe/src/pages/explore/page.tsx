@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Check, ChevronDown, Search, X } from 'lucide-react';
 import heartIcon from '../../images/mypage/heart.svg';
@@ -14,6 +14,7 @@ import {
   getLabelFromApiCategory,
   type ApiCategory,
 } from '../../lib/utils/category';
+import { useAuthStore } from '@/stores/useAuthStore';
 
 const CATEGORY_TABS = [
   { key: 'hair', label: '헤어' },
@@ -139,6 +140,7 @@ const CategoryLandingPage = () => {
   }, [location.search]);
   const apiCategory = getApiCategoryFromRoute(categoryKey);
   const categoryLabel = getLabelFromApiCategory(apiCategory);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   const [experts, setExperts] = useState<ExpertListCard[]>([]);
   const [noticeMessage, setNoticeMessage] = useState<string | null>(null);
@@ -154,10 +156,48 @@ const CategoryLandingPage = () => {
   const [openCalendarSheet, setOpenCalendarSheet] = useState(false);
   const [selectedConsultType, setSelectedConsultType] =
     useState<ConsultType>('MESSAGE');
+  const tabTrackRef = useRef<HTMLDivElement | null>(null);
+  const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const [tabUnderlineStyle, setTabUnderlineStyle] = useState({ left: 0, width: 0 });
   // 예약 시작 시 선택한 전문가 저장
   const [selectedReservationExpertId, setSelectedReservationExpertId] = useState<number | null>(
     null,
   );
+
+  const updateTabUnderline = () => {
+    const track = tabTrackRef.current;
+    const active = tabRefs.current[categoryKey];
+    if (!track || !active) {
+      return;
+    }
+    const trackRect = track.getBoundingClientRect();
+    const activeRect = active.getBoundingClientRect();
+    setTabUnderlineStyle({
+      left: activeRect.left - trackRect.left,
+      width: activeRect.width,
+    });
+  };
+
+  useLayoutEffect(() => {
+    updateTabUnderline();
+  }, [categoryKey]);
+
+  useEffect(() => {
+    const handleResize = () => updateTabUnderline();
+    window.addEventListener('resize', handleResize);
+    if (document.fonts?.ready) {
+      document.fonts.ready.then(updateTabUnderline).catch(() => {});
+    }
+    return () => window.removeEventListener('resize', handleResize);
+  }, [categoryKey]);
+
+  useEffect(() => {
+    const state = location.state as { openCalendarSheet?: boolean } | null;
+    if (state?.openCalendarSheet) {
+      setOpenCalendarSheet(true);
+      navigate(location.pathname, { replace: true, state: null });
+    }
+  }, [location.pathname, location.state, navigate]);
 
   useEffect(() => {
     let isActive = true;
@@ -245,6 +285,9 @@ const CategoryLandingPage = () => {
     if (categoryKey === 'fashion') {
       return '/reservation/fashion';
     }
+    if (categoryKey !== 'hair') {
+      return '/service-ready';
+    }
     return '/hair/setup';
   };
 
@@ -287,6 +330,11 @@ const CategoryLandingPage = () => {
     const price = matched.price;
     // 카테고리별 임시 예약 생성
     const category = categoryKey === 'fashion' ? 'FASHION' : 'HAIR';
+    const selectedExpert = experts.find((expert) => expert.id === selectedReservationExpertId);
+    sessionStorage.setItem('consult_expert_name', selectedExpert?.name ?? '전문가');
+    sessionStorage.setItem('consult_category_label', categoryLabel || '전문가');
+    sessionStorage.setItem('consult_price', String(price));
+    sessionStorage.setItem('consult_expert_id', String(selectedReservationExpertId));
 
     const response = await reservationService.createTempReservation({
       expertId: selectedReservationExpertId,
@@ -298,6 +346,7 @@ const CategoryLandingPage = () => {
       price,
     });
 
+    sessionStorage.setItem('consult_reservation_id', String(response.data.reservationId));
     return response.data.reservationId;
   };
 
@@ -364,8 +413,11 @@ const CategoryLandingPage = () => {
             {CATEGORY_TABS.map((tab) => (
               <button
                 key={tab.key}
+                ref={(element) => {
+                  tabRefs.current[tab.key] = element;
+                }}
                 onClick={() => {
-                  if (tab.key === 'makeup' || tab.key === 'skin') {
+                  if (tab.key === 'makeup') {
                     navigate('/service-ready');
                     return;
                   }
@@ -379,15 +431,10 @@ const CategoryLandingPage = () => {
               </button>
             ))}
           </div>
-          <div className="relative h-px bg-[#e1e2e4]">
+          <div ref={tabTrackRef} className="relative h-px bg-[#e1e2e4]">
             <span
-              className="absolute bottom-0 h-[2px] w-[24px] bg-[#0f0f10]"
-              style={{
-                left: `${Math.max(
-                  0,
-                  CATEGORY_TABS.findIndex((tab) => tab.key === categoryKey),
-                ) * 88}px`,
-              }}
+              className="absolute bottom-0 h-[2px] bg-[#0f0f10]"
+              style={{ left: tabUnderlineStyle.left, width: tabUnderlineStyle.width }}
             />
           </div>
         </section>
@@ -510,6 +557,10 @@ const CategoryLandingPage = () => {
                         event.stopPropagation();
                         if (categoryKey !== 'hair' && categoryKey !== 'fashion') {
                           setNoticeMessage('해당 카테고리는 상담 예약이 준비 중입니다.');
+                          return;
+                        }
+                        if (!isAuthenticated) {
+                          navigate('/auth/login');
                           return;
                         }
                         // 선택한 전문가 ID 저장
@@ -713,6 +764,7 @@ const CategoryLandingPage = () => {
         onNext={async ({ date, timeId }) => {
           sessionStorage.setItem('consult_schedule_label', formatScheduleLabel(date, timeId));
           setOpenCalendarSheet(false);
+          sessionStorage.setItem('consult_return_path', `${location.pathname}${location.search}`);
           // 패션 예약 임시 생성 후 reservationId 전달
           if (categoryKey === 'fashion' || categoryKey === 'hair') {
             const reservationId = await handleTempReservation(date, timeId);

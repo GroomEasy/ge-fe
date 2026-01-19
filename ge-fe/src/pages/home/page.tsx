@@ -565,11 +565,12 @@
 
 // export default HomePage;
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ChevronRight, Search } from "lucide-react";
 import { useAuthStore } from "../../stores/useAuthStore";
 import heartIcon from "../../images/mypage/heart.svg";
+import redHeartIcon from "../../images/redHeart.svg";
 import BottomNav from "@/components/navigation/bottom-nav";
 import Logo from "@/components/ui/logo";
 import starIcon from "../../images/reviews/star.svg";
@@ -646,20 +647,32 @@ type ExpertListCard = {
 const HomePage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { initializeAuth } = useAuthStore();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const initializeAuth = useAuthStore((state) => state.initializeAuth);
   const [selectedTopTab, setSelectedTopTab] = useState("헤어");
   const [selectedConsultingTab, setSelectedConsultingTab] = useState("전체");
   const [selectedHomeTab, setSelectedHomeTab] = useState("전체");
   const [topExperts, setTopExperts] = useState<TopExpert[]>([]);
   const [reviews, setReviews] = useState<ReviewCard[]>([]);
+  const [likedExpertIds, setLikedExpertIds] = useState<Set<number>>(new Set());
   const homeTabTrackRef = useRef<HTMLDivElement | null>(null);
-  const homeTabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const homeTabRefs = useRef<Record<string, HTMLSpanElement | null>>({});
   const [homeUnderlineStyle, setHomeUnderlineStyle] = useState({ left: 0, width: 0 });
+  const bannerTrackRef = useRef<HTMLDivElement | null>(null);
 
   // ✅ 추가: bottom sheet 제어 + 선택값 저장(원하면 다음 페이지로 넘길 수 있음)
   const [openTypeSheet, setOpenTypeSheet] = useState(false);
   const [openCalendarSheet, setOpenCalendarSheet] = useState(false);
   const [selectedConsultType, setSelectedConsultType] = useState<ConsultType>("MESSAGE");
+
+  const refreshLikedExperts = useCallback(async () => {
+    try {
+      const response = await expertService.getLikedExperts({ page: 0, size: 100 });
+      setLikedExpertIds(new Set(response.data.map((expert) => expert.expertId)));
+    } catch (error) {
+      console.error("Failed to fetch liked experts:", error);
+    }
+  }, []);
 
   const formatDate = (value?: string) => {
     if (!value) {
@@ -702,6 +715,25 @@ const HomePage = () => {
       .filter(Boolean);
   };
 
+  const banners: Banner[] = [
+    {
+      id: 1,
+      image: banner1,
+    },
+    {
+      id: 2,
+      image: banner2,
+    },
+    {
+      id: 3,
+      image: banner3,
+    },
+  ];
+  const bannerItemWidth = 340;
+  const bannerGap = 8;
+  const bannerSegment = (bannerItemWidth + bannerGap) * banners.length;
+  const loopedBanners = useMemo(() => [...banners, ...banners, ...banners], [banners]);
+
   const updateHomeUnderline = () => {
     const track = homeTabTrackRef.current;
     const active = homeTabRefs.current[selectedHomeTab];
@@ -733,6 +765,16 @@ const HomePage = () => {
   useEffect(() => {
     initializeAuth();
   }, [initializeAuth]);
+
+  useEffect(() => {
+    const track = bannerTrackRef.current;
+    if (!track) return;
+    track.scrollLeft = bannerSegment;
+  }, [bannerSegment]);
+
+  useEffect(() => {
+    refreshLikedExperts();
+  }, [refreshLikedExperts]);
 
   useEffect(() => {
     const state = location.state as { openCalendarSheet?: boolean } | null;
@@ -846,21 +888,6 @@ const HomePage = () => {
     [],
   );
 
-  const banners: Banner[] = [
-    {
-      id: 1,
-      image: banner1,
-    },
-    {
-      id: 2,
-      image: banner2,
-    },
-    {
-      id: 3,
-      image: banner3,
-    },
-  ];
-
   const topTabs = [
     { label: "헤어", minWidth: 47 },
     { label: "패션", minWidth: 47 },
@@ -910,6 +937,10 @@ const HomePage = () => {
 
   // ✅ 추가: 예약 플로우 시작
   const openReservationFlow = () => {
+    if (!isAuthenticated) {
+      navigate("/auth/login");
+      return;
+    }
     setOpenCalendarSheet(false);
     setOpenTypeSheet(true);
   };
@@ -955,7 +986,10 @@ const HomePage = () => {
           <button className="flex h-6 w-6 items-center justify-center">
             <Search className="h-6 w-6 text-[#0f0f10]" />
           </button>
-          <button className="flex h-6 w-6 items-center justify-center">
+          <button
+            className="flex h-6 w-6 items-center justify-center"
+            onClick={() => navigate("/LikedList")}
+          >
             <img src={heartIcon} alt="찜" className="h-6 w-6" />
           </button>
         </div>
@@ -967,11 +1001,8 @@ const HomePage = () => {
             {homeTabs.map((tab) => (
               <button
                 key={tab.id}
-                ref={(element) => {
-                  homeTabRefs.current[tab.label] = element;
-                }}
                 onClick={() => {
-                  if (tab.id === "makeup" || tab.id === "skin") {
+                  if (tab.id === "makeup") {
                     navigate("/service-ready");
                     return;
                   }
@@ -980,9 +1011,18 @@ const HomePage = () => {
                     navigate(tab.route, { state: { fromHomeTab: true } });
                   }
                 }}
-                className={tab.label === selectedHomeTab ? "text-[#0f0f10]" : "text-[#989ba2]"}
+                className={`border-0 bg-transparent p-0 ${
+                  tab.label === selectedHomeTab ? "text-[#0f0f10]" : "text-[#989ba2]"
+                }`}
               >
-                {tab.label}
+                <span
+                  ref={(element) => {
+                    homeTabRefs.current[tab.label] = element;
+                  }}
+                  className="inline-block"
+                >
+                  {tab.label}
+                </span>
               </button>
             ))}
           </div>
@@ -994,9 +1034,21 @@ const HomePage = () => {
           </div>
         </section>
 
-        <section className="px-4 pt-5">
-          <div className="flex gap-[4px] overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory">
-            {banners.map((banner) => {
+        <section className="pt-5">
+          <div
+            ref={bannerTrackRef}
+            onScroll={() => {
+              const track = bannerTrackRef.current;
+              if (!track) return;
+              if (track.scrollLeft <= bannerSegment * 0.5) {
+                track.scrollLeft += bannerSegment;
+              } else if (track.scrollLeft >= bannerSegment * 1.5) {
+                track.scrollLeft -= bannerSegment;
+              }
+            }}
+            className="flex gap-[8px] overflow-x-auto px-2 pb-2 scrollbar-hide snap-x snap-mandatory"
+          >
+            {loopedBanners.map((banner, index) => {
               const hasText =
                 banner.eyebrow ||
                 banner.title ||
@@ -1005,8 +1057,8 @@ const HomePage = () => {
                 banner.role;
               return (
                 <article
-                  key={banner.id}
-                  className="relative h-[340px] w-[340px] shrink-0 overflow-hidden rounded-[12px] bg-[#c7c9cf] snap-start"
+                  key={`${banner.id}-${index}`}
+                  className="relative h-[340px] w-[340px] shrink-0 overflow-hidden rounded-none bg-[#c7c9cf] snap-center"
                 >
                   {banner.image && (
                     <img
@@ -1131,12 +1183,45 @@ const HomePage = () => {
                 </div>
                 <button
                   className="flex h-6 w-6 items-center justify-center"
-                  onClick={(event) => {
+                  onClick={async (event) => {
                     event.stopPropagation();
+                    const expertId = expert.expertId;
+                    if (!expertId) {
+                      return;
+                    }
+                    try {
+                      if (likedExpertIds.has(expertId)) {
+                        await expertService.unlikeExpert(expertId);
+                        setLikedExpertIds((prev) => {
+                          const next = new Set(prev);
+                          next.delete(expertId);
+                          return next;
+                        });
+                        return;
+                      }
+                      await expertService.likeExpert(expertId);
+                      setLikedExpertIds((prev) => new Set(prev).add(expertId));
+                    } catch (error) {
+                      const status = (error as { response?: { status?: number } })?.response
+                        ?.status;
+                      if (status === 409) {
+                        await refreshLikedExperts();
+                        return;
+                      }
+                      console.error("Failed to toggle like:", error);
+                    }
                   }}
                   type="button"
                 >
-                  <img src={heartIcon} alt="찜" className="h-6 w-6" />
+                  <img
+                    src={
+                      expert.expertId && likedExpertIds.has(expert.expertId)
+                        ? redHeartIcon
+                        : heartIcon
+                    }
+                    alt="찜"
+                    className="h-6 w-6"
+                  />
                 </button>
               </div>
             ))}

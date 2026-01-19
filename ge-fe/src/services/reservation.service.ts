@@ -1,5 +1,5 @@
 import { api } from "../lib/api/client";
-import type { ApiResponse } from "../lib/api/types";
+import type { ApiResponse, PointApplicationResponse } from "../lib/api/types";
 
 export type OutfitPriceRange = {
   minPrice: number;
@@ -7,11 +7,11 @@ export type OutfitPriceRange = {
 };
 
 export type FashionImageList = {
-  frontFullBody: string[];
-  leftFullBody: string[];
-  rightFullBody: string[];
-  favoriteOutfit: string[];
-  consultationPurpose?: string[];
+  front: string[];
+  left: string[];
+  right: string[];
+  favorite: string[];
+  purpose?: string[];
 };
 
 export type FashionConcern = {
@@ -59,6 +59,10 @@ export type TempReservationResponse = {
   reservationStatus: string;
 };
 
+export type ApplyPointsRequest = {
+  pointsToUse: number;
+};
+
 export const reservationService = {
   async updateFashionConcern(
     reservationId: number,
@@ -75,6 +79,15 @@ export const reservationService = {
   ): Promise<ApiResponse<TempReservationResponse>> {
     return await api.post<ApiResponse<TempReservationResponse>>(
       "/reservations/temp",
+      payload,
+    );
+  },
+  async applyPoints(
+    reservationId: number,
+    payload: ApplyPointsRequest,
+  ): Promise<ApiResponse<PointApplicationResponse>> {
+    return await api.put<ApiResponse<PointApplicationResponse>>(
+      `/reservations/${reservationId}/points`,
       payload,
     );
   },
