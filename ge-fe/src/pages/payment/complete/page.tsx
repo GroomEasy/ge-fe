@@ -35,21 +35,74 @@ export function PaymentCompletePage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isExpanded, setIsExpanded] = useState(false);
-  const state = location.state as { from?: string; flowFrom?: string; step?: number; paymentAmount?: number } | null;
+  const state = location.state as {
+    from?: string;
+    flowFrom?: string;
+    step?: number;
+    paymentAmount?: number;
+    consultType?: "MESSAGE" | "VIDEO";
+    consultLabel?: string;
+    expertName?: string;
+    categoryLabel?: string;
+    scheduleLabel?: string;
+    paymentDeadline?: string;
+  } | null;
   const paymentAmount = state?.paymentAmount ?? 0;
+  const consultTypeFromState = state?.consultType;
+  const consultTypeFromStorage = sessionStorage.getItem("consult_type");
+  const consultType =
+    consultTypeFromState === "MESSAGE" || consultTypeFromState === "VIDEO"
+      ? consultTypeFromState
+      : consultTypeFromStorage === "MESSAGE" || consultTypeFromStorage === "VIDEO"
+        ? consultTypeFromStorage
+        : "MESSAGE";
+  const consultLabel =
+    state?.consultLabel ?? (consultType === "VIDEO" ? "실시간 화상 상담" : "메세지 상담");
+  const expertName =
+    state?.expertName ?? sessionStorage.getItem("consult_expert_name") ?? "전문가";
+  const categoryLabel =
+    state?.categoryLabel ?? sessionStorage.getItem("consult_category_label") ?? "헤어";
+  const scheduleLabel =
+    state?.scheduleLabel ??
+    sessionStorage.getItem("consult_schedule_label") ??
+    "예약 일정";
+  const paymentDeadline =
+    state?.paymentDeadline ?? sessionStorage.getItem("payment_deadline");
+  const orderSummary = `${consultLabel} | ${expertName} (${categoryLabel} 전문)`;
+  const consultantLabel = `${expertName} | ${categoryLabel}`;
   const formatCurrency = (value: number) => `${value.toLocaleString("ko-KR")}원`;
+  const formatPaymentDeadline = (value: string) => {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return null;
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    return `${year}년 ${month}월 ${day}일 ${hours}:${minutes}`;
+  };
+  const paymentDeadlineLabel =
+    (paymentDeadline ? formatPaymentDeadline(paymentDeadline) : null) ??
+    "2025년 12월 13일 23:59";
   const appendStep = (path: string, step?: number) => {
     if (!step || path.includes("step=")) return path;
     const joiner = path.includes("?") ? "&" : "?";
     return `${path}${joiner}step=${step}`;
   };
   const handleBack = () => {
-    if (state?.flowFrom) {
-      navigate(appendStep(state.flowFrom, state.step));
+    if (state?.from) {
+      navigate(state.from, {
+        state: {
+          from: state.from,
+          flowFrom: state.flowFrom,
+          step: state.step,
+          fromComplete: true,
+        },
+      });
       return;
     }
-    if (state?.from) {
-      navigate(state.from);
+    if (state?.flowFrom) {
+      navigate(appendStep(state.flowFrom, state.step));
       return;
     }
     navigate(-1);
@@ -93,7 +146,7 @@ export function PaymentCompletePage() {
         </p>
         <p className="mx-auto mt-[8px] w-[260px] text-[13px] leading-[1.4] text-[#989ba2]">
           상담 확정을 위해{" "}
-          <span className="font-semibold text-[#171719]">2025년 12월 13일 23:59</span>
+          <span className="font-semibold text-[#171719]">{paymentDeadlineLabel}</span>
           까지 입금을 완료해주세요.
         </p>
       </div>
@@ -107,14 +160,14 @@ export function PaymentCompletePage() {
         <div className="mt-[16px] flex items-center gap-[28px] text-[16px] leading-[1.4]">
           <span className="font-semibold">입금 계좌</span>
           <div className="flex items-center gap-[6px] text-[#70737c]">
-            <span>우리</span>
-            <span className="border-b border-[#70737c] pb-[2px]">0000-0000-0000-0000</span>
+            <span>신한</span>
+            <span className="border-b border-[#70737c] pb-[2px]">110-578-261003</span>
           </div>
         </div>
         <div className="mt-[18px] h-px w-full bg-[#e1e2e4]" />
         <div className="mt-[16px] flex items-center gap-[28px] text-[16px] leading-[1.4]">
           <span className="font-semibold">상담 일자</span>
-          <span className="text-[#70737c]">2025년 12월 14일 00시 00분</span>
+          <span className="text-[#70737c]">{scheduleLabel}</span>
         </div>
         <div className="mt-[18px] h-px w-full bg-[#e1e2e4]" />
       </div>
@@ -128,7 +181,7 @@ export function PaymentCompletePage() {
                 isExpanded ? "pointer-events-none opacity-0" : ""
               }`}
             >
-              메세지 상담 | 성정수 상담사 (헤어 전문)
+              {orderSummary}
             </span>
           </div>
           <OrderChevron expanded={isExpanded} />
@@ -138,11 +191,11 @@ export function PaymentCompletePage() {
           <div className="mt-[16px] flex flex-col gap-[12px] text-[14px] leading-[1.4]">
             <div className="flex items-center justify-between">
               <span className="text-[#505158]">상담 종류</span>
-              <span className="font-semibold text-[#0f0f10]">메세지 상담</span>
+              <span className="font-semibold text-[#0f0f10]">{consultLabel}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-[#505158]">상담사명/카테고리</span>
-              <span className="font-semibold text-[#0f0f10]">성정수 상담사 | 헤어</span>
+              <span className="font-semibold text-[#0f0f10]">{consultantLabel}</span>
             </div>
           </div>
         )}
